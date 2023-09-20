@@ -1,0 +1,30 @@
+version: 1.0
+
+port: 8080
+public: public
+base: /api
+apis:
+  - path: /hello
+    methods: get, post, put, delete, patch
+    name: hello
+    type: mssql:table
+    pk: id
+    fields:
+      - name: id
+        type: int
+        required: true
+      - name: name
+        type: string
+        required: true
+      - name: age
+        type: int
+        required: true
+      - name: created_at
+        type: datetime
+        required: true
+      - name: updated_at
+        type: datetime
+        required: true
+
+
+

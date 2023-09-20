@@ -6,7 +6,7 @@
 
 async function main() {
 
-  let cwd = process.argv[2] || '.';
+  // let cwd = process.argv[2] || '.';
   // if (cwd === '.') {
   //   const opts = await prompts([{
   //     type: 'text',
@@ -16,7 +16,11 @@ async function main() {
   //   cwd = opts.cwd;
   // }
 
-  require('./index')({ cwd });
+  // require('./index')({ cwd });
+
+
+  let conf = process.argv[2] || './config.yaml'
+  require('./index')({ conf });
 }
 
 main().catch(e => console.error(e));
