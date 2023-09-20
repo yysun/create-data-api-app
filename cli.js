@@ -20,7 +20,7 @@ async function main() {
 
 
   let conf = process.argv[2] || './config.yaml'
-  require('./index')({ conf });
+  require('./index')({ conf, cwd: './demo' });
 }
 
 main().catch(e => console.error(e));

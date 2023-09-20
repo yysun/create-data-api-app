@@ -1,48 +1,97 @@
 const fs = require('fs');
 // const path = require('path');
 const yaml = require('js-yaml');
+const { init, connect, close, createGet, createPost, createPut, createDelete, createPatch } = require('./mssql');
 
-module.exports = ({ conf }) => {
+module.exports = ({ conf, cwd }) => {
 
   const configFile = fs.readFileSync(conf, 'utf8');
-  const { port, base, apis, public } = yaml.load(configFile);
+  const { name, port, base, api, public } = yaml.load(configFile);
+  api.forEach(item => item.path = `${base}${item.path}`);
 
-  const createTest = ({ name, path, method }) => {
-    method = method.trim().toUpperCase();
-    return `###\n${method} {{host}}${base}${path}\n\n`;
+  const createDiagram = () => {
+    return !api || !api.length ? '' :
+      api.map(({ name, fields }) => `${name} {\n` + fields.map(field => `  ${field}\n`)
+        .join('')).join('') + '}';
   };
-  const createMethod = ({ name, path, method }) => {
+
+  const createRestApiTest = () => {
+    return !api || !api.length ? '' :
+      api.map(({ path, methods }) => methods.split(',').map(method => {
+        method = method.trim().toUpperCase();
+        return `###\n${method} {{host}}${path}\n\n`;
+      }).join('')).join('');
+  };
+
+  const createRestApiMethod = (method, api) => {
     method = method.trim().toLowerCase();
-    return `
-app.${method}('${base}${path}', (req, res) => {
-  res.send('');
-});\n`
-
+    switch (method) {
+      case 'get':
+        return createGet(api);
+      case 'post':
+        return createPost(api);
+      case 'put':
+        return createPut(api);
+      case 'delete':
+        return createDelete(api);
+      case 'patch':
+        return createPatch(api);
+    }
   };
 
-  const createApi = ({ name, path, methods }, fn) => methods.split(',')
-    .map(method => fn({ name, path, method })).join('');
+  const createRestApi = () => {
+    return !api || !api.length ? '' :
+      api.map(a => a.methods.split(',').map(method =>
+        createRestApiMethod(method, a)).join('')).join('');
+  };
 
   const sourceCode = `
+require('dotenv').config()
 const express = require('express');
 const app = express();
 ${public && `app.use(express.static('${public}'));` || ''}
-${apis && apis.map(api => `${createApi(api, createMethod)}`).join('')}
 
+${init()}
+${connect()}
+${close()}
+
+${createRestApi()}
 const port = process.env.port || ${port || 3000};
 app.listen(port, () => {
   console.log(\`API server listening on port \${port}\`);
 });
-
-
-
-/* Tests
-
-@host=http://localhost:${port}
-
-${apis && apis.map(api => `${createApi(api, createTest)}`).join('')}
-*/
 `;
 
-  console.log(sourceCode);
+  const testCode = `
+@host=http://localhost:${port}
+
+${createRestApiTest()}
+`;
+
+  const readmeCode = `
+# ${name}
+
+## Installation
+
+\`\`\`bash
+npm init -y
+npm install express mssql
+\`\`\`
+
+## API
+
+${createRestApiTest()}
+
+## Data Model
+
+\`\`\`mermaid
+erDiagram
+${createDiagram()}
+\`\`\`
+`;
+
+  fs.writeFileSync(`${cwd}/index.js`, sourceCode);
+  fs.writeFileSync(`${cwd}/test.http`, testCode);
+  fs.writeFileSync(`${cwd}/README.md`, readmeCode);
+
 }
