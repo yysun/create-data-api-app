@@ -1,7 +1,7 @@
 const fs = require('fs');
 const yaml = require('js-yaml');
 
-const createDiagram = require('./create-diagram');
+const createReadme = require('./create-readme');
 const createTest = require('./create-http-test');
 const createModel = require('./create-model');
 const createExpressApp = require('./create-express-app');
@@ -15,32 +15,10 @@ module.exports = ({ conf, cwd }) => {
     entity.path = `${path ?? ''}/${entity.name}`;
   });
 
-  const readmeCode = `
-# ${name}
-
-## Installation
-
-\`\`\`bash
-npm init -y
-npm install express mssql
-\`\`\`
-
-## API
-
-
-
-## Data Model
-
-\`\`\`mermaid
-erDiagram
-${createDiagram(entities)}
-\`\`\`
-`;
-
   fs.writeFileSync(`${cwd}/model.js`, createModel(entities));
   fs.writeFileSync(`${cwd}/app-express.js`, createExpressApp(port, public, entities));
   fs.writeFileSync(`${cwd}/app-azure.js`, createAzureApp(entities));
-  // fs.writeFileSync(`${cwd}/test.http`, createTest(port, entities));
-  fs.writeFileSync(`${cwd}/README.md`, readmeCode);
+  fs.writeFileSync(`${cwd}/test.http`, createTest(port, entities));
+  fs.writeFileSync(`${cwd}/README.md`, createReadme(name, port, entities));
 
 }
