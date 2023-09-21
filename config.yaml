@@ -3,11 +3,10 @@ name: My API app
 port: 8080
 public: public
 base: /api
-api:
+entities:
   - path: /hello
     methods: get, post, put, delete, patch
     name: hello
-    type: mssql:table
     fields:
       - int id PK "autoincrement"
       - varchar name
@@ -15,20 +14,19 @@ api:
       - datetime created_at
       - datetime updated_at
 
-
   - path: /company-person
-    id: companyId
-    methods: get
-    name: CompanyPersonEmployeeType A
+    name: CompanyPerson
+    from: CompanyPersonEmployeeType A
           INNER JOIN CompanyPerson CP ON CP.CompanyPersonID = A.CompanyPersonID
           INNER JOIN Company C ON CP.CompanyID = C.CompanyID
-    type: mssql:table
     fields:
       - int CP.CompanyID PK
       - int CP.CompanyPersonID
       - string A.EmployeeTypeCt
       - datetime StartDate
       - datetime EndDate
+    methods: get
+    id: companyId
 
 
 
