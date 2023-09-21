@@ -30,7 +30,7 @@ entities:
   - type: stored procedure
     name: usp_update_user
     fields:
-      - int id PK
+      - int id
       - varchar name
       - varchar email
       - datetime created_at

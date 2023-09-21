@@ -4,7 +4,8 @@ const yaml = require('js-yaml');
 const createDiagram = require('./create-diagram');
 const createTest = require('./create-http-test');
 const createModel = require('./create-model');
-const createApi = require('./create-api');
+const createExpressApp = require('./create-express-app');
+const createAzureApp = require('./create-azure-app');
 
 module.exports = ({ conf, cwd }) => {
 
@@ -42,7 +43,8 @@ ${createDiagram(entities)}
 `;
 
   fs.writeFileSync(`${cwd}/model.js`, createModel(entities));
-  fs.writeFileSync(`${cwd}/server.js`, createApi(port, public, entities));
+  fs.writeFileSync(`${cwd}/app-express.js`, createExpressApp(port, public, entities));
+  fs.writeFileSync(`${cwd}/app-azure.js`, createAzureApp(entities));
   fs.writeFileSync(`${cwd}/test.http`, createTest(port, entities));
   fs.writeFileSync(`${cwd}/README.md`, readmeCode);
 

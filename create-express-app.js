@@ -1,6 +1,6 @@
 module.exports = (port, public, entities) => {
 
-  const api_method = (method, { name, path, path_plural, id, fields }) => {
+  const api_method = (method, { name, path, id, fields }) => {
     method = method.trim().toLowerCase();
     fields = fields.map(f => {
       const [type, name, keys, comment] = f.split(' ');
@@ -29,7 +29,8 @@ app.get('${path}', async (req, res) => {
       default:
         return `
 app.${method}('${path}', async (req, res) => {
-  const result = await model.${name}.${method}();
+  const body = req.body;
+  const result = await model.${name}.${method}(body);
   res.json(result);
 });
 `
@@ -44,7 +45,6 @@ app.${method}('${path}', async (req, res) => {
     entities.map(e => entity_api(e)).join('');
 
   const sourceCode = `const model = require('./model');
-
 const express = require('express');
 const app = express();
 ${public && `app.use(express.static('${public}'));` || ''}

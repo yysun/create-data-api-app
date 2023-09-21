@@ -109,27 +109,19 @@ module.exports = entities => {
 
   const entity_model = e => {
 
-    if (e.type === 'query') {
-      return `
-module.exports.${e.name} = {
-  ${model_method('get', e)}
-}
-`;
-    } else if (e.type === 'stored procedure') {
+    if (e.type === 'stored procedure') {
       return createStoredProcedure(e);
-    } else if (e.type === 'table') {
-
+    } else {
       const methods = e.methods.split(',');
       return `
 module.exports.${e.name} = {
   ${methods.map(method => model_method(method, e)).join('')}
-}
-`;
+}`;
     }
   };
 
   const models = !entities || !entities.length ? '' :
-    entities.map(e => entity_model(e)).join('');
+    entities.map(e => entity_model(e)).join('\n');
 
   return `${init}
 ${connect}
