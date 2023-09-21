@@ -20,7 +20,7 @@ app.get('${path}/:${id}', async (req, res) => {
   res.json(result);
 });
 
-app.get('${path_plural}', async (req, res) => {
+app.get('${path}', async (req, res) => {
   const result = await model.${name}.getAll();
   res.json(result);
 });

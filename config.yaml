@@ -2,11 +2,9 @@ version: 1.0
 name: My API app
 port: 8080
 public: public
-base: /api
+path: /api
 entities:
-  - path: /user
-    path_plural: /users
-    type: table
+  - type: table
     name: user
     fields:
       - int id PK "autoincrement"
@@ -16,8 +14,7 @@ entities:
       - datetime updated_at
     methods: get, post, put, delete, patch
 
-  - path: /company-person
-    type: query
+  - type: query
     name: CompanyPerson
     from: CompanyPersonEmployeeType A
           INNER JOIN CompanyPerson CP ON CP.CompanyPersonID = A.CompanyPersonID
@@ -30,11 +27,10 @@ entities:
       - datetime EndDate
     id: companyId
 
-  - path: /update_user
-    type: stored procedure
+  - type: stored procedure
     name: usp_update_user
     fields:
-      - int id PK "autoincrement"
+      - int id PK
       - varchar name
       - varchar email
       - datetime created_at

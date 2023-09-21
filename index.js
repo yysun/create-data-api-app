@@ -9,10 +9,9 @@ const createApi = require('./create-api');
 module.exports = ({ conf, cwd }) => {
 
   const configFile = fs.readFileSync(conf, 'utf8');
-  const { name, port, base, entities, public } = yaml.load(configFile);
+  const { name, port, path, entities, public } = yaml.load(configFile);
   entities.forEach(entity => {
-    entity.path_plural = `${base}${entity.path_plural || entity.path}`;
-    entity.path = `${base}${entity.path}`;
+    entity.path = `${path ?? ''}/${entity.name}`;
     if (entity.type === 'query') {
       entity.methods = 'get';
     } else if (entity.type === 'stored procedure') {
