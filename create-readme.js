@@ -23,8 +23,6 @@ npm install express mssql
 
 ## API
 
-${createTest(port, entities).replace(/\{\{host\}\}/g, '').replace(/###/g, '')}
-
 ## Data Model
 
 \`\`\`mermaid
