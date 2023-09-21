@@ -8,7 +8,7 @@ entities:
     name: user
     fields:
       - int id PK "autoincrement"
-      - varchar name
+      - varchar name PK
       - varchar email
       - datetime created_at
       - datetime updated_at
@@ -16,16 +16,17 @@ entities:
 
   - type: query
     name: CompanyPerson
-    from: CompanyPersonEmployeeType A
+    query: SELECT
+            CP.CompanyID,
+            CP.CompanyPersonID,
+            A.EmployeeTypeCt,
+            CONVERT(NCHAR(8),[StartDate],112) as 'StartDate',
+            CONVERT(NCHAR(8),[EndDate],112) as 'EndDate'
+          FROM CompanyPersonEmployeeType A
           INNER JOIN CompanyPerson CP ON CP.CompanyPersonID = A.CompanyPersonID
-          INNER JOIN Company C ON CP.CompanyID = C.CompanyID
+          INNER JOIN Company C ON CP.CompanyID = C.CompanyID AND A.StartDate >= C.AuditDate
     fields:
-      - int CP.CompanyID PK
-      - int CP.CompanyPersonID
-      - string A.EmployeeTypeCt
-      - datetime StartDate
-      - datetime EndDate
-    id: companyId
+      - int CompanyID
 
   - type: stored procedure
     name: usp_update_user

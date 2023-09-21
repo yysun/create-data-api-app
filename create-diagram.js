@@ -5,7 +5,9 @@ module.exports = entities => {
     '\n}';
 
   const diagram = !entities || !entities.length ? '' :
-    entities.map(e => entity_diagram(e)).join('\n\n');
+    entities
+      .filter(e => e.type === 'table')
+      .map(e => entity_diagram(e)).join('\n\n');
 
   return diagram;
 };

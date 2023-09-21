@@ -2,6 +2,7 @@ module.exports = (port, public, entities) => {
 
   const api_method = (method, { name, path, id, fields }) => {
     method = method.trim().toLowerCase();
+    fields = fields || [];
     fields = fields.map(f => {
       const [type, name, keys, comment] = f.split(' ');
       const pk = keys?.indexOf('PK') > -1;
@@ -37,9 +38,22 @@ app.${method}('${path}', async (req, res) => {
     }
   }
 
-  const entity_api = e => `// -- ${e.name} --
-  ${e.methods.split(',').map(method => api_method(method, e)).join('')}
+  const entity_api = e => {
+    if (e.type === 'stored procedure' || e.type === 'query') {
+      const { name, path } = e;
+      return `
+app.post('${path}', async (req, res) => {
+  const body = req.body;
+  const result = await model.${name}(body);
+  res.json(result);
+});
 `;
+    } else {
+      const methods = e.methods.split(',');
+      return ` // -- ${e.name} --
+${methods.map(method => api_method(method, e)).join('')}`;
+    }
+  };
 
   const api = !entities || !entities.length ? '' :
     entities.map(e => entity_api(e)).join('');

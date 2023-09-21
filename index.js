@@ -13,11 +13,6 @@ module.exports = ({ conf, cwd }) => {
   const { name, port, path, entities, public } = yaml.load(configFile);
   entities.forEach(entity => {
     entity.path = `${path ?? ''}/${entity.name}`;
-    if (entity.type === 'query') {
-      entity.methods = 'get';
-    } else if (entity.type === 'stored procedure') {
-      entity.methods = 'post';
-    }
   });
 
   const readmeCode = `
@@ -32,7 +27,7 @@ npm install express mssql
 
 ## API
 
-${createTest(port, entities).replace(/\{\{host\}\}/g, '').replace(/###/g, '')}
+
 
 ## Data Model
 
@@ -45,7 +40,7 @@ ${createDiagram(entities)}
   fs.writeFileSync(`${cwd}/model.js`, createModel(entities));
   fs.writeFileSync(`${cwd}/app-express.js`, createExpressApp(port, public, entities));
   fs.writeFileSync(`${cwd}/app-azure.js`, createAzureApp(entities));
-  fs.writeFileSync(`${cwd}/test.http`, createTest(port, entities));
+  // fs.writeFileSync(`${cwd}/test.http`, createTest(port, entities));
   fs.writeFileSync(`${cwd}/README.md`, readmeCode);
 
 }

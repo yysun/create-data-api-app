@@ -30,50 +30,113 @@ process.on('SIGINT', () => {
   });
 });`;
 
-function createGet({ name, from, fields, id }) {
+function createGet({ name, fields, id }) {
   const fieldsList = fields_list(fields);
-  const selectList = fieldsList.map(f => `      ${f.name}`).join(',\n');
   const pk = fieldsList.find(f => f.pk)?.name;
   id = id || pk;
-  from = from || name;
-  const query = `SELECT\n${selectList} FROM ${from}`;
+  const selectList = fieldsList.map(f => `      ${f.name}`).join(',\n');
+  const keys = fields_list(fields).filter(f => f.pk).map(f => f.name) || [id];
 
-  const getByPk =
+  const query = `SELECT\n${selectList} FROM ${name}`;
+
+  const getOne =
     `  getOne: async ${id} => {
     const result = await sql.query\`${query} WHERE ${pk} = \${${id}}\`;
     return result.recordset;
   },
 `;
 
-  const getAll =
-    `  getAll: async () => {
-    const result = await sql.query\`${query}\`;
+  const getAll = `
+  getAll: async ({${keys.join(', ')}}) => {
+    const result = await sql.query\`${query} WHERE
+${keys.map(f => `      ${f} = \${${f}}`).join(' AND\n')}
+    \`;
     return result.recordset;
   },
 `;
   return `
-${getByPk}
+${getOne}
 ${getAll}`;
 }
 
 
-function createPost() {
+function createPost({ name, fields }) {
+  const fieldsList = fields_list(fields).map(f => f.name) || [];
+  return `
+  post: async ({${fieldsList.join(', ')}}) => {
+    const query = \`INSERT INTO ${name} (
+${fieldsList.map(f => `      ${f}`).join(',\n')}
+    ) VALUES (
+${fieldsList.map(f => `      \${${f}}`).join(',\n')}
+    )\`;
+    const result = await sql.query\`\${query}\`;
+    return result.recordset;
+  },
+`;
 
 }
 
-function createPut() {
+function createPut({ name, fields }) {
+  const keys = fields_list(fields).filter(f => f.pk).map(f => f.name) || [];
+  const fieldsList = fields_list(fields).map(f => f.name) || [];
+  return `
+  put: async ({${fieldsList.join(', ')}}) => {
+    const query = \`MERGE INTO ${name} WITH (HOLDLOCK) AS target
+    USING (VALUES (
+${fieldsList.map(f => `      \${${f}}`).join(',\n')}
+    )) AS source (
+${fieldsList.map(f => `      ${f}`).join(',\n')}
+    ) ON (
+${keys.map(f => `      target.${f} = source.${f}`).join(' AND\n')}
+    )
+    WHEN MATCHED THEN
+      UPDATE SET
+${fieldsList.map(f => `      ${f} = source.${f}`).join(',\n')}
+    WHEN NOT MATCHED THEN
+      INSERT (
+${fieldsList.map(f => `        ${f}`).join(',\n')}
+      ) VALUES (
+${fieldsList.map(f => `        source.${f}`).join(',\n')}
+      );
+    \`;
+    const result = await sql.query\`\${query}\`;
+    return result.recordset;
+  },
+`;
 
 }
 
-function createDelete() {
+function createDelete({ name, fields }) {
+  const keys = fields_list(fields).filter(f => f.pk).map(f => f.name) || [];
+  return `
+  delete: async ({${keys.join(', ')}}) => {
+    const query = \`DELETE FROM ${name} WHERE
+${keys.map(f => `      ${f} = \${${f}}`).join(' AND\n')}
+    \`;
+    const result = await sql.query\`\${query}\`;
+    return result.recordset;
+  },
+`;
+}
+
+function createPatch({ name, fields }) {
+  const keys = fields_list(fields).filter(f => f.pk).map(f => f.name) || [];
+  const fieldsList = fields_list(fields).map(f => f.name) || [];
+  return `
+  patch: async ({${fieldsList.join(', ')}}) => {
+    const query = \`UPDATE ${name} SET
+${fieldsList.map(f => `      ${f} = \${${f}}`).join(',\n')}
+    WHERE
+${keys.map(f => `      ${f} = \${${f}}`).join(' AND\n')}
+    \`;
+    const result = await sql.query\`\${query}\`;
+    return result.recordset;
+  },
+`;
 
 }
 
-function createPatch() {
-
-}
-
-function createStoredProcedure({ name, fields}) {
+function createStoredProcedure({ name, fields }) {
   const fieldsList = fields_list(fields);
 
   return `
@@ -86,6 +149,30 @@ module.exports.${name} = async ({
   return result.recordset;
 }
 `
+}
+
+function createQuery({ name, query, fields }) {
+  const fieldsList = fields_list(fields || []).map(f => f.name) || [];
+  if (fieldsList.length === 0) {
+    return `
+module.exports.${name} = async () => {
+    const result = await sql.query\`${query}\`;
+    return result.recordset;
+  }
+`
+  } else {
+    return `
+module.exports.${name} = async ({
+  ${fieldsList.map(f => `${f}`).join(', ')}
+}) => {
+
+  const result = await sql.query\`${query} WHERE
+${fieldsList.map(f => `      ${f} = \${${f}}`).join(' AND\n')}
+    \`;
+  return result.recordset;
+}
+`;
+  }
 }
 
 module.exports = entities => {
@@ -111,6 +198,8 @@ module.exports = entities => {
 
     if (e.type === 'stored procedure') {
       return createStoredProcedure(e);
+    } else if (e.type === 'query') {
+      return createQuery(e);
     } else {
       const methods = e.methods.split(',');
       return `

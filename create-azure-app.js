@@ -2,6 +2,7 @@ module.exports = (entities) => {
 
   const api_method = (method, { name, type, path, id, fields }) => {
     method = method.trim().toLowerCase();
+    fields = fields || [];
     fields = fields.map(f => {
       const [type, name, keys, comment] = f.split(' ');
       const pk = keys?.indexOf('PK') > -1;
@@ -28,7 +29,7 @@ app.http('${path}', {
         case 'get':
           return `
 app.http('${path}/:${id}', {
-  methods: ['GET'],
+  methods: ['get'],
   handler: async (request) => {
     const ${id} = request.params.${id};
     const result = await model.${name}.getOne(${id});
@@ -37,9 +38,10 @@ app.http('${path}/:${id}', {
 });
 
 app.http('${path}', {
-  methods: ['GET'],
+  methods: ['get'],
   handler: async (request) => {
-    const result = await model.${name}.getAll();
+    const body = request.body;
+    const result = await model.${name}.getAll(body);
     return { jsonBody: result };
   }
 });
@@ -60,9 +62,25 @@ app.http('${path}', {
     }
   }
 
-  const entity_api = e => `// -- ${e.name} --
-  ${e.methods.split(',').map(method => api_method(method, e)).join('')}
+  const entity_api = e => {
+    if (e.type === 'stored procedure'|| e.type === 'query') {
+      const { name, path } = e;
+      return `
+app.http('${path}', {
+  methods: ['post'],
+  handler: async (request) => {
+    const body = request.body;
+    const result = await model.${name}(body);
+    return { jsonBody: result };
+  }
+});
 `;
+    } else {
+      const methods = e.methods.split(',');
+      return ` // -- ${e.name} --
+${methods.map(method => api_method(method, e)).join('')}`;
+    }
+  };
 
   const api = !entities || !entities.length ? '' :
     entities.map(e => entity_api(e)).join('');
