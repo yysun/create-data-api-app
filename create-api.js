@@ -1,6 +1,6 @@
 module.exports = (port, public, entities) => {
 
-  const api_method = (method, { name, path, id, fields }) => {
+  const api_method = (method, { name, path, path_plural, id, fields }) => {
     method = method.trim().toLowerCase();
     fields = fields.map(f => {
       const [type, name, keys, comment] = f.split(' ');
@@ -20,7 +20,7 @@ app.get('${path}/:${id}', async (req, res) => {
   res.json(result);
 });
 
-app.get('${path}', async (req, res) => {
+app.get('${path_plural}', async (req, res) => {
   const result = await model.${name}.getAll();
   res.json(result);
 });

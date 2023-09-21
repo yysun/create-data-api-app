@@ -4,17 +4,20 @@ port: 8080
 public: public
 base: /api
 entities:
-  - path: /hello
-    methods: get, post, put, delete, patch
-    name: hello
+  - path: /user
+    path_plural: /users
+    type: table
+    name: user
     fields:
       - int id PK "autoincrement"
       - varchar name
       - varchar email
       - datetime created_at
       - datetime updated_at
+    methods: get, post, put, delete, patch
 
   - path: /company-person
+    type: query
     name: CompanyPerson
     from: CompanyPersonEmployeeType A
           INNER JOIN CompanyPerson CP ON CP.CompanyPersonID = A.CompanyPersonID
@@ -25,8 +28,17 @@ entities:
       - string A.EmployeeTypeCt
       - datetime StartDate
       - datetime EndDate
-    methods: get
     id: companyId
+
+  - path: /update_user
+    type: stored procedure
+    name: usp_update_user
+    fields:
+      - int id PK "autoincrement"
+      - varchar name
+      - varchar email
+      - datetime created_at
+      - datetime updated_at
 
 
 

@@ -10,7 +10,15 @@ module.exports = ({ conf, cwd }) => {
 
   const configFile = fs.readFileSync(conf, 'utf8');
   const { name, port, base, entities, public } = yaml.load(configFile);
-  entities.forEach(item => item.path = `${base}${item.path}`);
+  entities.forEach(entity => {
+    entity.path_plural = `${base}${entity.path_plural || entity.path}`;
+    entity.path = `${base}${entity.path}`;
+    if (entity.type === 'query') {
+      entity.methods = 'get';
+    } else if (entity.type === 'stored procedure') {
+      entity.methods = 'post';
+    }
+  });
 
   const readmeCode = `
 # ${name}
@@ -35,7 +43,7 @@ ${createDiagram(entities)}
 `;
 
   fs.writeFileSync(`${cwd}/model.js`, createModel(entities));
-  fs.writeFileSync(`${cwd}/index.js`, createApi(port, public, entities));
+  fs.writeFileSync(`${cwd}/server.js`, createApi(port, public, entities));
   fs.writeFileSync(`${cwd}/test.http`, createTest(port, entities));
   fs.writeFileSync(`${cwd}/README.md`, readmeCode);
 

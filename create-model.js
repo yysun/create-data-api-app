@@ -53,8 +53,7 @@ function createGet({ name, from, fields, id }) {
 `;
   return `
 ${getByPk}
-${getAll}
-    `;
+${getAll}`;
 }
 
 
@@ -74,12 +73,24 @@ function createPatch() {
 
 }
 
+function createStoredProcedure({ name, fields}) {
+  const fieldsList = fields_list(fields);
 
+  return `
+module.exports.${name} = async ({
+  ${fieldsList.map(f => `${f.name}`).join(', ')}
+}) => {
+
+  const result = await sql.query\`EXEC ${name}
+    ${fieldsList.map(f => `\${${f.name}}`).join(', ')}\`;
+  return result.recordset;
+}
+`
+}
 
 module.exports = entities => {
 
   const model_method = (method, entity) => {
-
     method = method.trim().toLowerCase();
     switch (method) {
       case 'get':
@@ -93,14 +104,29 @@ module.exports = entities => {
       case 'patch':
         return createPatch(entity);
     }
-    return '';
-  }
-  const entity_model = e => `
-module.exports.${e.name} = {
-  ${e.methods.split(',').map(method => model_method(method, e)).join('')}
-}
+  };
 
+
+  const entity_model = e => {
+
+    if (e.type === 'query') {
+      return `
+module.exports.${e.name} = {
+  ${model_method('get', e)}
+}
 `;
+    } else if (e.type === 'stored procedure') {
+      return createStoredProcedure(e);
+    } else if (e.type === 'table') {
+
+      const methods = e.methods.split(',');
+      return `
+module.exports.${e.name} = {
+  ${methods.map(method => model_method(method, e)).join('')}
+}
+`;
+    }
+  };
 
   const models = !entities || !entities.length ? '' :
     entities.map(e => entity_model(e)).join('');
@@ -108,8 +134,7 @@ module.exports.${e.name} = {
   return `${init}
 ${connect}
 ${close}
+${models}
+`;
 
-  ${models}
-`
-    ;
 }
