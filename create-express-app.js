@@ -1,31 +1,23 @@
 module.exports = (port, public, entities) => {
 
-  const api_method = (method, { name, path, id, fields }) => {
+  const api_method = (method, { name, path, keys }) => {
     method = method.trim().toLowerCase();
-    fields = fields || [];
-    fields = fields.map(f => {
-      const [type, name, keys, comment] = f.split(' ');
-      const pk = keys?.indexOf('PK') > -1;
-      return { type, name, pk, comment };
-    });
-
-    const pk = fields.find(f => f.pk)?.name;
-    id = id || pk;
+    const pk = keys && keys[0];
 
     switch (method) {
       case 'get':
-        return `
-app.get('${path}/:${id}', async (req, res) => {
-  const ${id} = req.params.${id};
-  const result = await model.${name}.getOne(${id});
+        return keys.length === 1 ? `
+app.get('${path}/:${pk}', async (req, res) => {
+  const ${pk} = req.params.${pk};
+  const result = await model.${name}.find(${pk});
   res.json(result);
 });
-
-app.get('${path}', async (req, res) => {
-  const result = await model.${name}.getAll();
+` : `
+app.post('${path}', async (req, res) => {
+  const body = req.body;
+  const result = await model.${name}.search(body);
   res.json(result);
 });
-
 `;
       default:
         return `
@@ -61,6 +53,7 @@ ${methods.map(method => api_method(method, e)).join('')}`;
   const sourceCode = `const model = require('./model');
 const express = require('express');
 const app = express();
+app.use(express.json());
 ${public && `app.use(express.static('${public}'));` || ''}
 
 ${api.trim()}

@@ -1,12 +1,3 @@
-const fields_list = fields => fields.map(f => {
-
-  const [type, name, keys, comment] = f.split(' ');
-  const pk = keys?.indexOf('PK') > -1;
-  return { type, name, pk, comment };
-});
-
-
-
 const init = `
 require('dotenv').config();
 const sql = require('mssql');
@@ -30,24 +21,20 @@ process.on('SIGINT', () => {
   });
 });`;
 
-function createGet({ name, fields, id }) {
-  const fieldsList = fields_list(fields);
-  const pk = fieldsList.find(f => f.pk)?.name;
-  id = id || pk;
-  const selectList = fieldsList.map(f => `      ${f.name}`).join(',\n');
-  const keys = fields_list(fields).filter(f => f.pk).map(f => f.name) || [id];
+function createGet({ name, fields, keys }) {
+  const pk = fields.find(f => f.pk)?.name;
+  const selectList = fields.map(f => `      ${f.name}`).join(',\n');
 
   const query = `SELECT\n${selectList} FROM ${name}`;
-
-  const getOne =
-    `  getOne: async ${id} => {
-    const result = await sql.query\`${query} WHERE ${pk} = \${${id}}\`;
+  const find =
+    `  find: async ${pk} => {
+    const result = await sql.query\`${query} WHERE ${pk} = \${${pk}}\`;
     return result.recordset;
   },
 `;
 
-  const getAll = `
-  getAll: async ({${keys.join(', ')}}) => {
+  const search = `
+  search: async ({${keys.join(', ')}}) => {
     const result = await sql.query\`${query} WHERE
 ${keys.map(f => `      ${f} = \${${f}}`).join(' AND\n')}
     \`;
@@ -55,19 +42,18 @@ ${keys.map(f => `      ${f} = \${${f}}`).join(' AND\n')}
   },
 `;
   return `
-${getOne}
-${getAll}`;
+${find}
+${search}`;
 }
 
-
 function createPost({ name, fields }) {
-  const fieldsList = fields_list(fields).map(f => f.name) || [];
+  const field_names = fields.map(f => f.name);
   return `
-  post: async ({${fieldsList.join(', ')}}) => {
+  post: async ({${field_names.join(', ')}}) => {
     const query = \`INSERT INTO ${name} (
-${fieldsList.map(f => `      ${f}`).join(',\n')}
+${field_names.map(f => `      ${f}`).join(',\n')}
     ) VALUES (
-${fieldsList.map(f => `      \${${f}}`).join(',\n')}
+${field_names.map(f => `      \${${f}}`).join(',\n')}
     )\`;
     const result = await sql.query\`\${query}\`;
     return result.recordset;
@@ -76,27 +62,26 @@ ${fieldsList.map(f => `      \${${f}}`).join(',\n')}
 
 }
 
-function createPut({ name, fields }) {
-  const keys = fields_list(fields).filter(f => f.pk).map(f => f.name) || [];
-  const fieldsList = fields_list(fields).map(f => f.name) || [];
+function createPut({ name, fields, keys }) {
+  const field_names = fields.map(f => f.name);
   return `
-  put: async ({${fieldsList.join(', ')}}) => {
+  put: async ({${field_names.join(', ')}}) => {
     const query = \`MERGE INTO ${name} WITH (HOLDLOCK) AS target
     USING (VALUES (
-${fieldsList.map(f => `      \${${f}}`).join(',\n')}
+${field_names.map(f => `      \${${f}}`).join(',\n')}
     )) AS source (
-${fieldsList.map(f => `      ${f}`).join(',\n')}
+${field_names.map(f => `      ${f}`).join(',\n')}
     ) ON (
 ${keys.map(f => `      target.${f} = source.${f}`).join(' AND\n')}
     )
     WHEN MATCHED THEN
       UPDATE SET
-${fieldsList.map(f => `      ${f} = source.${f}`).join(',\n')}
+${field_names.map(f => `      ${f} = source.${f}`).join(',\n')}
     WHEN NOT MATCHED THEN
       INSERT (
-${fieldsList.map(f => `        ${f}`).join(',\n')}
+${field_names.map(f => `        ${f}`).join(',\n')}
       ) VALUES (
-${fieldsList.map(f => `        source.${f}`).join(',\n')}
+${field_names.map(f => `        source.${f}`).join(',\n')}
       );
     \`;
     const result = await sql.query\`\${query}\`;
@@ -106,8 +91,7 @@ ${fieldsList.map(f => `        source.${f}`).join(',\n')}
 
 }
 
-function createDelete({ name, fields }) {
-  const keys = fields_list(fields).filter(f => f.pk).map(f => f.name) || [];
+function createDelete({ name, keys }) {
   return `
   delete: async ({${keys.join(', ')}}) => {
     const query = \`DELETE FROM ${name} WHERE
@@ -119,13 +103,12 @@ ${keys.map(f => `      ${f} = \${${f}}`).join(' AND\n')}
 `;
 }
 
-function createPatch({ name, fields }) {
-  const keys = fields_list(fields).filter(f => f.pk).map(f => f.name) || [];
-  const fieldsList = fields_list(fields).map(f => f.name) || [];
+function createPatch({ name, fields, keys }) {
+  const field_names = fields.map(f => f.name);
   return `
-  patch: async ({${fieldsList.join(', ')}}) => {
+  patch: async ({${field_names.join(', ')}}) => {
     const query = \`UPDATE ${name} SET
-${fieldsList.map(f => `      ${f} = \${${f}}`).join(',\n')}
+${field_names.map(f => `      ${f} = \${${f}}`).join(',\n')}
     WHERE
 ${keys.map(f => `      ${f} = \${${f}}`).join(' AND\n')}
     \`;
@@ -137,23 +120,21 @@ ${keys.map(f => `      ${f} = \${${f}}`).join(' AND\n')}
 }
 
 function createStoredProcedure({ name, fields }) {
-  const fieldsList = fields_list(fields);
-
   return `
 module.exports.${name} = async ({
-  ${fieldsList.map(f => `${f.name}`).join(', ')}
+  ${fields.map(f => `${f.name}`).join(', ')}
 }) => {
 
   const result = await sql.query\`EXEC ${name}
-    ${fieldsList.map(f => `\${${f.name}}`).join(', ')}\`;
+    ${fields.map(f => `\${${f.name}}`).join(', ')}\`;
   return result.recordset;
 }
 `
 }
 
 function createQuery({ name, query, fields }) {
-  const fieldsList = fields_list(fields || []).map(f => f.name) || [];
-  if (fieldsList.length === 0) {
+  const field_names = fields.map(f => f.name);
+  if (field_names.length === 0) {
     return `
 module.exports.${name} = async () => {
     const result = await sql.query\`${query}\`;
@@ -163,11 +144,11 @@ module.exports.${name} = async () => {
   } else {
     return `
 module.exports.${name} = async ({
-  ${fieldsList.map(f => `${f}`).join(', ')}
+  ${field_names.map(f => `${f}`).join(', ')}
 }) => {
 
   const result = await sql.query\`${query} WHERE
-${fieldsList.map(f => `      ${f} = \${${f}}`).join(' AND\n')}
+${field_names.map(f => `      ${f} = \${${f}}`).join(' AND\n')}
     \`;
   return result.recordset;
 }

@@ -3,7 +3,7 @@ module.exports = (name, port, entities) => {
   const createTest = require('./create-http-test');
 
   const entity_diagram = ({ name, fields }) => `${name} {\n` +
-    fields.map(field => `  ${field.replace('.', '_')}`).join('\n') +
+    fields.map(field => `  ${field.def}`).join('\n') +
     '\n}';
 
   const diagram = !entities || !entities.length ? '' :

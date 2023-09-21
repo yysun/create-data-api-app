@@ -8,7 +8,7 @@ entities:
     name: user
     fields:
       - int id PK "autoincrement"
-      - varchar name PK
+      - varchar name
       - varchar email
       - datetime created_at
       - datetime updated_at
