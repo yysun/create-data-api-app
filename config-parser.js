@@ -52,16 +52,19 @@ module.exports = file => {
           }
         }
 
+        const prefix = config.databases.length > 1 ? `/${db.name}` : '';
+        path = `${config.path}${prefix}/${path}}`
         const api = {
           name,
           type,
           func: `${name}:${key}`,
-          path: `/${path}`,
+          path,
           method,
           fields,
           key_names: fields.filter(f => f.keys).map(f => `${f.name}`),
           field_names: fields.map(f => `${f.name}`)
         };
+
 
         db.paths.push(api);
       });

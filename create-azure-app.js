@@ -1,75 +1,45 @@
-module.exports = (entities) => {
+const create_api = database => database.paths.map(
+  ({ path, method, func, key_names }) => {
 
-  const api_method = (method, { name, path, keys }) => {
-    method = method.trim().toLowerCase();
-    const pk = keys && keys[0];
-
-    switch (method) {
-      case 'get':
-        return keys.length === 1 ?`
-app.http('${path}/:${pk}', {
-  methods: ['get'],
+    return key_names.length > 0 ? `
+app.http('${path}', {
+  methods: ['${method}'],
   handler: async (request) => {
-    const ${pk} = request.params.${pk};
-    const result = await model.${name}.find(${pk});
+${key_names.map(key => `  const ${key} = request.params.${key};`).join('\n')}
+  const result = await model['${func}'](${key_names.join(', ')});
     return { jsonBody: result };
   }
 });
 ` : `
 app.http('${path}', {
-  methods: ['post'],
-  handler: async (request) => {
-    const body = request.body;
-    const result = await model.${name}.search(body);
-    return { jsonBody: result };
-  }
-});
-
-`;
-      default:
-        return `
-app.http('${path}', {
   methods: ['${method}'],
   handler: async (request) => {
     const body = request.body;
-    const result = await model.${name}.${method}(body);
+    const result = await model['${func}'](body);
     return { jsonBody: result };
   }
 });
-`
-    } // switch
-  }
+`; }).join('');
 
 
-  const entity_api = e => {
-    if (e.type === 'stored procedure'|| e.type === 'query') {
-      const { name, path } = e;
-      return `
-app.http('${path}', {
-  methods: ['post'],
-  handler: async (request) => {
-    const body = request.body;
-    const result = await model.${name}(body);
-    return { jsonBody: result };
-  }
+module.exports = ({ port, public, path, databases }) => {
+
+  const apis = !databases || !databases.length ? '' :
+    databases.map(d => create_api(d)).join('\n');
+  
+  return `const model = require('./model');
+const express = require('express');
+const bodyParser = require('body-parser')
+const app = express();
+app.use(bodyParser.json());
+${public && `app.use(express.static('${public}'));` || ''}
+
+${apis}
+
+const port = process.env.port || ${port || 3000};
+app.listen(port, () => {
+  console.log(\`API server listening on port \${port}\`);
 });
 `;
-    } else {
-      const methods = e.methods.split(',');
-      return ` // -- ${e.name} --
-${methods.map(method => api_method(method, e)).join('')}`;
-    }
-  };
-
-  const api = !entities || !entities.length ? '' :
-    entities.map(e => entity_api(e)).join('');
-
-  const sourceCode = `const model = require('./model');
-const { app } = require('@azure/functions');
-
-${api.trim()}
-`;
-
-  return sourceCode;
 
 }
