@@ -3,39 +3,67 @@ name: My API app
 port: 8080
 public: public
 path: /api
-entities:
-  - type: table
-    name: user
-    fields:
-      - int id PK "autoincrement"
-      - varchar name
-      - varchar email
-      - datetime created_at
-      - datetime updated_at
-    methods: get, post, put, delete, patch
+databases:
+  - type: mssql
+    name: mydb
+    objects:
+      - table: users
+        get:
+          - int id PK "autoincrement"
+          - varchar name PK
+          - varchar email
+        get-id:
+          - int id PK
+          - varchar name
+          - varchar email
+          - datetime created_at
+          - datetime updated_at
+        post:
+          - varchar name
+          - varchar email
+        put:
+          - int id PK
+          - varchar name
+          - varchar email
+        delete:
+          - int id PK
+        patch-name:
+          - int id PK
+          - varchar name
+        patch-email:
+          - int id PK
+          - varchar email
 
-  - type: query
-    name: CompanyPerson
-    query: SELECT
-            CP.CompanyID,
-            CP.CompanyPersonID,
-            A.EmployeeTypeCt,
-            CONVERT(NCHAR(8),[StartDate],112) as 'StartDate',
-            CONVERT(NCHAR(8),[EndDate],112) as 'EndDate'
-          FROM CompanyPersonEmployeeType A
-          INNER JOIN CompanyPerson CP ON CP.CompanyPersonID = A.CompanyPersonID
-          INNER JOIN Company C ON CP.CompanyID = C.CompanyID AND A.StartDate >= C.AuditDate
-    fields:
-      - int CompanyID
+      - procedure: usp_update_user
+        post:
+          - int id
+          - varchar name
+          - varchar email
+          - datetime created_at
+          - datetime updated_at
 
-  - type: stored procedure
-    name: usp_update_user
-    fields:
-      - int id
-      - varchar name
-      - varchar email
-      - datetime created_at
-      - datetime updated_at
-
+      - query: CompanyPerson
+        select: SELECT
+                CP.CompanyID,
+                CP.CompanyPersonID,
+                A.EmployeeTypeCt,
+                CONVERT(NCHAR(8),[StartDate],112) as 'StartDate',
+                CONVERT(NCHAR(8),[EndDate],112) as 'EndDate'
+              FROM CompanyPersonEmployeeType A
+              INNER JOIN CompanyPerson CP ON CP.CompanyPersonID = A.CompanyPersonID
+              INNER JOIN Company C ON CP.CompanyID = C.CompanyID AND A.StartDate >= C.AuditDate
+        get:
+        get-byPerson:
+          - int CompanyID "CP.CompanyID"
+          - int CompanyPersonID PK "CP.CompanyPersonID"
+          - int EmployeeTypeCt "A.EmployeeTypeCt"
+          - datetime StartDate "A.StartDate"
+          - datetime EndDate "A.EndDate"
+        get-byCompany:
+          - int CompanyID PK "CP.CompanyID"
+          - int CompanyPersonID "CP.CompanyPersonID"
+          - int EmployeeTypeCt "A.EmployeeTypeCt"
+          - datetime StartDate "A.StartDate"
+          - datetime EndDate "A.EndDate"
 
 
