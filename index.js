@@ -14,7 +14,7 @@ module.exports = ({ conf, cwd }) => {
 
   const config = configParser(conf);
 
-  // fs.writeFileSync(`${cwd}/model.js`, createModel(entities));
+  fs.writeFileSync(`${cwd}/model.js`, createModel(config));
   // fs.writeFileSync(`${cwd}/index.js`, createExpressApp(port, public, entities));
   // fs.writeFileSync(`${cwd}/app-azure.js`, createAzureApp(entities));
   // fs.writeFileSync(`${cwd}/test.http`, createTest(port, entities));

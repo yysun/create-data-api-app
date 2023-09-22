@@ -55,10 +55,12 @@ module.exports = file => {
         const api = {
           name,
           type,
-          func: `${key}`,
+          func: `${name}:${key}`,
           path: `/${path}`,
           method,
           fields,
+          key_names: fields.filter(f => f.keys).map(f => `${f.name}`),
+          field_names: fields.map(f => `${f.name}`)
         };
 
         db.paths.push(api);

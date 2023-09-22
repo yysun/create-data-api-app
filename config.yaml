@@ -54,16 +54,8 @@ databases:
               INNER JOIN Company C ON CP.CompanyID = C.CompanyID AND A.StartDate >= C.AuditDate
         get:
         get-byPerson:
-          - int CompanyID "CP.CompanyID"
           - int CompanyPersonID PK "CP.CompanyPersonID"
-          - int EmployeeTypeCt "A.EmployeeTypeCt"
-          - datetime StartDate "A.StartDate"
-          - datetime EndDate "A.EndDate"
         get-byCompany:
           - int CompanyID PK "CP.CompanyID"
-          - int CompanyPersonID "CP.CompanyPersonID"
-          - int EmployeeTypeCt "A.EmployeeTypeCt"
-          - datetime StartDate "A.StartDate"
-          - datetime EndDate "A.EndDate"
 
 
