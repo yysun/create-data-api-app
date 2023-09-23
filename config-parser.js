@@ -13,6 +13,7 @@ module.exports = file => {
         comment = keys;
         keys = undefined;
       }
+      if (comment) comment = comment.replace(/"/g, '');
       return { type, name, keys, comment };
     });
 
@@ -61,6 +62,7 @@ module.exports = file => {
           path,
           method,
           fields,
+          keys: fields.filter(f => f.keys),
           key_names: fields.filter(f => f.keys).map(f => `${f.name}`),
           field_names: fields.map(f => `${f.name}`)
         };

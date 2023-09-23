@@ -21,13 +21,13 @@ process.on('SIGINT', () => {
   });
 });`;
 
-function createGet({ name, select, field_names, key_names }) {
+function createGet({ name, select, field_names, keys }) {
   const selectList = field_names.map(f => `      ${f}`).join(',\n');
   select = select || `SELECT\n${selectList}\n    FROM ${name}`;
 
-  const where = !key_names || key_names.length === 0 ? '' :
+  const where = !keys || keys.length === 0 ? '' :
     `WHERE
-${key_names.map(f => `      ${f} = \${${f}}`).join(' AND\n')}`;
+${keys.map(f => `      ${f.comment||f.name} = \${${f.name}}`).join(' AND\n')}`;
 
   return `
     const query = \`${select} ${where}\`;
