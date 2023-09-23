@@ -54,7 +54,7 @@ module.exports = file => {
         }
 
         const prefix = config.databases.length > 1 ? `/${db.name}` : '';
-        path = `${config.path}${prefix}/${path}}`
+        path = `${config.path}${prefix}/${path}`
         const api = {
           name,
           type,

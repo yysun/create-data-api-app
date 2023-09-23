@@ -1,27 +1,29 @@
-module.exports = (port, entities) => {
+const create_api = database => database.paths.map(
+  ({ path, method, field_names }) => {
 
-  const entity_test = ({ name, type, path, methods }) => {
+    method = method.toUpperCase();
 
-    if (type === 'stored procedure' || type === 'query') {
-      return `## ${name}\n###\nPOST {{host}}${path}
-Content-Type: application/json\n`;
-    }
-
-    return !methods ? '' : `## [${name}]\n` +
-      methods.split(',').map(method => {
-        method = method.trim().toUpperCase();
-        return `###\n${method} {{host}}${path}
-Content-Type: application/json\n`;
-      }).join('\n');
-
-  }
-
-  const tests = !entities || !entities.length ? '' :
-    entities.map(e => entity_test(e)).join('\n');
-
-  return `
-@host=http://localhost:${port}
-
-${tests}
+    if (method === 'GET' || method === 'DELETE') {
+      return `###\n${method} {{host}}${path}`;
+    } else {
+      return `###\n${method} {{host}}${path}
+Content-Type: application/json
+{
+${field_names.map(key => `  "${key}": ""`).join(',\n')}
+}
 `;
+    }
+  }).join('\n\n');
+
+
+module.exports = ({ port, databases }) => {
+
+  const apis = !databases || !databases.length ? '' :
+    databases.map(d => create_api(d)).join('\n');
+
+  return `@host=http://localhost:${port}
+
+${apis}
+`;
+
 }
