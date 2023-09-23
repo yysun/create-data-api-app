@@ -1,18 +1,27 @@
 {
-  "name": "create-api-app",
+  "name": "create-data-api-app",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+
   "bin": {
-    "create-api-app": "cli.js"
+    "create-data-api-app": "cli.js"
   },
   "scripts": {
     "test": "cd demo && node server",
     "start": "nodemon --ignore demo/ cli"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Yiyi Sun <yiyisun@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yysun/apprun.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yysun/apprun/issues"
+  },
+  "homepage": "https://github.com/yysun/apprun#readme",
   "dependencies": {
     "js-yaml": "^4.1.0"
   },
