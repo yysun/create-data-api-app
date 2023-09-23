@@ -116,14 +116,21 @@ Fields that are used for search criteria can be defined as search key, SK. The s
 
 ## Express app
 
-The tool generates an express app for you. The app is located in the _app.js_ file. You can run the app by running the following command:
+The tool generates two files, _server.js_ and _app-express.js_. You can run the app by running the following command:
 
 ```bash
 npm install express body-parser mssql
-node app.js
+node server.js
+```
+The app will listen on the port that you defined in the config file.
+
+You can also bring the code of _app-express.js_ into your existing express app.
+
+```javascript
+require('./app-express')(app);
 ```
 
-The app will listen on the port that you defined in the config file.
+
 
 ## Data Model
 
