@@ -9,8 +9,8 @@ databases:
     objects:
       - table: users
         get:
-          - int id PK "autoincrement"
-          - varchar name PK
+          - int id
+          - varchar name
           - varchar email
         get-id:
           - int id PK
@@ -42,20 +42,10 @@ databases:
           - datetime created_at
           - datetime updated_at
 
-      - query: CompanyPerson
-        select: SELECT
-                CP.CompanyID,
-                CP.CompanyPersonID,
-                A.EmployeeTypeCt,
-                CONVERT(NCHAR(8),[StartDate],112) as 'StartDate',
-                CONVERT(NCHAR(8),[EndDate],112) as 'EndDate'
-              FROM CompanyPersonEmployeeType A
-              INNER JOIN CompanyPerson CP ON CP.CompanyPersonID = A.CompanyPersonID
-              INNER JOIN Company C ON CP.CompanyID = C.CompanyID AND A.StartDate >= C.AuditDate
+      - query: users_posts
+        select: select * from users u join posts p on u.id = p.user_id
         get:
-        get-byPerson:
-          - int CompanyPersonID PK "CP.CompanyPersonID"
-        get-byCompany:
-          - int CompanyID PK "CP.CompanyID"
+        get-byUser:
+          - int id PK "u.id"
 
 
