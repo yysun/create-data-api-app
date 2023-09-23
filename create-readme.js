@@ -29,7 +29,7 @@ module.exports = ({ name, port, databases }) => {
 \`\`\`bash
 npm init -y
 npm install express body-parser mssql
-node app.js
+node server.js
 \`\`\`
 
 ## Usage

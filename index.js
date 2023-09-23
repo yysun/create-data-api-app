@@ -1,5 +1,4 @@
 const fs = require('fs');
-const yaml = require('js-yaml');
 
 const createReadme = require('./create-readme');
 const createTest = require('./create-http-test');

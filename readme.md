@@ -7,7 +7,7 @@ We often need to write a restful API for database. This tool can generate the ap
 ## Usage
 
 ```bash
-npx create api-app [path-to-config-file]
+npx create data-api-app [path-to-config-file]
 ```
 
 ## Express app

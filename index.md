@@ -7,8 +7,7 @@ paginate: true
 
 Hi, developers!
 
-# Read this first
-
+## Read this spec first
 
 ```yaml
 name: My API app
@@ -26,13 +25,13 @@ databases:
 
 ---
 
-Can you write the API app in a few minutes?
+Can you write a database API app in a few minutes?
 
 ## Let's get started!
 
 ---
 
-You will need to write the database access code.
+### You will need code for database access.
 
 >
 
@@ -55,7 +54,7 @@ module.exports.mydb = {
 
 ---
 
-You will also need to write API endpoint.
+### You will also need code for API endpoint.
 
 >
 
@@ -77,7 +76,7 @@ app.listen(port, () => {
 
 ---
 
-The first one is easy, but what about many of these?
+### What about so many to write?
 
 ```yaml
 databases:
@@ -91,19 +90,16 @@ databases:
         delete:
         patch-name:
         patch-email:
-
       - procedure: usp_update_user
         post:
-
       - query: users_posts
-
 ```
 
 ---
 
-It certainly takes time to write all of them. what if
+It certainly takes time to write all of them. What if you can
 
-# Generate the Code
+## Generate the Code
 
 ```bash
 npx create-data-api-app
@@ -111,7 +107,7 @@ npx create-data-api-app
 
 ---
 
-# You will get runnable code in a few seconds.
+## And run code in a few seconds.
 
 ```bash
 node server
@@ -119,7 +115,7 @@ node server
 
 ---
 
-Plus, the specification of the API.
+Plus, you also get the specification of the API.
 
 >
 
@@ -168,10 +164,9 @@ Content-Type: application/json
 
 ---
 
-Try it!
+Try it yourself!
 
 # npx create-data-api-app
-
 
 [https://github.com/yysun/create-data-api-app/](https://github.com/yysun/create-data-api-app/)
 
