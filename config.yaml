@@ -1,4 +1,4 @@
-version: 1.0
+version: "1.0"
 name: My API app
 port: 8080
 public: public

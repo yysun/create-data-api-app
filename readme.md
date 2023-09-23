@@ -10,9 +10,31 @@ We often need to write a restful API for database. This tool can generate the ap
 npx create api-app [path-to-config-file]
 ```
 
+## Express app
+
+The tool generates source code: _server.js_, _app-express.js, _and _model.js. You can run the app by running the following command:
+
+```bash
+npm install express body-parser mssql
+node server.js
+```
+The app will listen on the port that you defined in the config file.
+
+You can also bring the code of _app-express.js_ into your existing express app.
+
+```javascript
+require('./app-express')(app);
+```
+
+In the _model.js_ file, it uses _mssql_ package to connect to MS SQL Server.
+
+## API Specification
+
+The tool also generates the api specification in the _api.yaml_ file.
+
 ## Configuration Explained
 
-The configuration file is the config.yaml file. It is located in the root folder of the project.
+The configuration file is the config.yaml file. It is located in the root folder of the project. See [this config.yaml](config.yaml) for example.
 
 ```yaml
 name: My API app
@@ -112,29 +134,6 @@ You can also define custom query that has joins to other tables. You can not def
 Primary key fields are defined as PK. if you define the key fields for the _users_ table as _id_, then the api path will be _/api/users/:id_.
 
 Fields that are used for search criteria can be defined as search key, SK. The search key fields will be used to generate the api path. E.g. _/api/users_posts/byUser/:id_
-
-
-## Express app
-
-The tool generates two files, _server.js_ and _app-express.js_. You can run the app by running the following command:
-
-```bash
-npm install express body-parser mssql
-node server.js
-```
-The app will listen on the port that you defined in the config file.
-
-You can also bring the code of _app-express.js_ into your existing express app.
-
-```javascript
-require('./app-express')(app);
-```
-
-
-
-## Data Model
-
-The tool generates the data model in the _model.js_ file. It uses _mssql_ package to connect to MS SQL Server.
 
 
 ## Azure Functions App

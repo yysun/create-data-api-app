@@ -38,7 +38,7 @@ node app.js
 
 ## API
 \`\`\`
-${apis}
+[api-spec.yaml](api-spec.yaml)
 \`\`\`
 `;
 };
