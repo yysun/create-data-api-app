@@ -1,15 +1,25 @@
-module.exports = (name, port, entities) => {
+const create_api = database => database.paths.map(
+  ({ path, method, field_names }) => {
 
-  const createTest = require('./create-http-test');
+    method = method.toUpperCase();
 
-  const entity_diagram = ({ name, fields }) => `${name} {\n` +
-    fields.map(field => `  ${field.def}`).join('\n') +
-    '\n}';
+    if (method === 'GET' || method === 'DELETE') {
+      return `###\n${method} ${path}`;
+    } else {
+      return `###\n${method} ${path}
+Content-Type: application/json
+{
+${field_names.map(key => `  "${key}": ""`).join(',\n')}
+}
+`;
+    }
+  }).join('\n\n');
 
-  const diagram = !entities || !entities.length ? '' :
-    entities
-      .filter(e => e.type === 'table')
-      .map(e => entity_diagram(e)).join('\n\n');
+
+module.exports = ({ name, port, databases }) => {
+
+  const apis = !databases || !databases.length ? '' :
+    databases.map(d => create_api(d)).join('\n');
 
   return `
 # ${name}
@@ -18,16 +28,17 @@ module.exports = (name, port, entities) => {
 
 \`\`\`bash
 npm init -y
-npm install express mssql
+npm install express body-parser mssql
+node app.js
 \`\`\`
 
+## Usage
+
+[http://localhost:${port}](http://localhost:${port})
+
 ## API
-
-## Data Model
-
-\`\`\`mermaid
-erDiagram
-${diagram}
+\`\`\`
+${apis}
 \`\`\`
 `;
 };

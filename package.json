@@ -7,7 +7,7 @@
     "create-api-app": "cli.js"
   },
   "scripts": {
-    "test": "cd demo && node .",
+    "test": "cd demo && node server",
     "start": "nodemon --ignore demo/ cli"
   },
   "keywords": [],

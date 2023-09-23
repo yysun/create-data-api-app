@@ -11,13 +11,12 @@ const configParser = require('./config-parser');
 
 module.exports = ({ conf, cwd }) => {
 
-
   const config = configParser(conf);
 
   fs.writeFileSync(`${cwd}/model.js`, createModel(config));
-  fs.writeFileSync(`${cwd}/index.js`, createExpressApp(config));
+  fs.writeFileSync(`${cwd}/server.js`, createExpressApp(config));
   fs.writeFileSync(`${cwd}/app-azure.js`, createAzureApp(config));
-  // fs.writeFileSync(`${cwd}/test.http`, createTest(config));
-  // fs.writeFileSync(`${cwd}/README.md`, createReadme(config));
+  fs.writeFileSync(`${cwd}/test.http`, createTest(config));
+  fs.writeFileSync(`${cwd}/README.md`, createReadme(config));
 
 }
