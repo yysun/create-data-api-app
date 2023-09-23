@@ -16,12 +16,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yysun/apprun.git"
+    "url": "git+https://github.com/yysun/create-data-api-app.git"
   },
   "bugs": {
-    "url": "https://github.com/yysun/apprun/issues"
+    "url": "https://github.com/yysun/create-data-api-app/issues"
   },
-  "homepage": "https://github.com/yysun/apprun#readme",
+  "homepage": "https://github.com/yysun/create-data-api-app#readme",
   "dependencies": {
     "js-yaml": "^4.1.0"
   },
