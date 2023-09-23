@@ -46,10 +46,13 @@ module.exports = file => {
 
         path = `${name}${path ? '/' + path : ''}`;
         method = method.toLowerCase();
-        if (method === 'get' || method === 'delete' || method === 'patch') {
-          const keys = fields.filter(field => field.keys && field.keys.includes('PK'));
+        if (method === 'get' || method === 'delete') {
+          const keys = fields.filter(field => field.keys);
           if (keys.length > 0) {
             path += keys.map(key => `/:${key.name}`).join('');
+          }
+          if (keys.length === 1 && keys.find(f=>f.keys.includes('PK'))) {
+            path = `${name}/:${keys[0].name}`;
           }
         }
 

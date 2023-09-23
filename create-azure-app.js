@@ -1,7 +1,7 @@
 const create_api = database => database.paths.map(
   ({ path, method, func, key_names }) => {
 
-    return key_names.length > 0 ? `
+    return (method === 'get' || method === 'delete') > 0 ? `
 app.http('${path}', {
   methods: ['${method}'],
   handler: async (request) => {

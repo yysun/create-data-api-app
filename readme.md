@@ -104,8 +104,15 @@ You can also define custom query that has joins to other tables. You can not def
         select: select * from users u join posts p on u.id = p.user_id
         get:
         get-byUser:
-          - int id PK "u.id"
+          - int id SK "u.id"
 ```
+
+## Key Fields
+
+Primary key fields are defined as PK. if you define the key fields for the _users_ table as _id_, then the api path will be _/api/users/:id_.
+
+Fields that are used for search criteria can be defined as search key, SK. The search key fields will be used to generate the api path. E.g. _/api/users_posts/byUser/:id_
+
 
 ## Express app
 

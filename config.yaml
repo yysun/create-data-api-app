@@ -46,6 +46,6 @@ databases:
         select: select * from users u join posts p on u.id = p.user_id
         get:
         get-byUser:
-          - int id PK "u.id"
+          - int id SK "u.id"
 
 
