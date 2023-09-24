@@ -7,7 +7,8 @@ We often need to write a restful API for database. This tool can generate the ap
 ## Usage
 
 ```bash
-npx create data-api-app [path-to-config-file]
+npx create data-api-app [-c config.ymal] [source directory]
+```
 ```
 
 ## Express app
@@ -129,6 +130,7 @@ You can also define custom query that has joins to other tables. You can not def
           - int id SK "u.id"
 ```
 
+
 ## Key Fields
 
 Primary key fields are defined as PK. if you define the key fields for the _users_ table as _id_, then the api path will be _/api/users/:id_.
@@ -136,11 +138,15 @@ Primary key fields are defined as PK. if you define the key fields for the _user
 Fields that are used for search criteria can be defined as search key, SK. The search key fields will be used to generate the api path. E.g. _/api/users_posts/byUser/:id_
 
 
-## Azure Functions App
+## Azure Functions App (Experimental)
 
 The tool also generates the code for Azure Functions app (V4). The code is in the _app-azure.js_
 
+## Authentication
 
+### Global Authentication
+
+### Route Level Authentication
 
 ## License
 

@@ -3,13 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-
   "bin": {
     "create-data-api-app": "cli.js"
   },
   "scripts": {
-    "test": "cd demo && node server",
-    "start": "nodemon --ignore demo/ cli"
+    "start": "cd demo && nodemon server",
+    "dev": "nodemon --ignore demo/ cli demo"
   },
   "keywords": [],
   "author": "Yiyi Sun <yiyisun@gmail.com>",
@@ -23,6 +22,7 @@
   },
   "homepage": "https://github.com/yysun/create-data-api-app#readme",
   "dependencies": {
+    "commander": "^11.0.0",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
