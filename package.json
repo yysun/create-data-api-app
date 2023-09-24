@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "cd demo && nodemon server",
-    "dev": "nodemon --ignore demo/ cli demo"
+    "dev": "nodemon --ignore demo/ cli.js -- demo"
   },
   "keywords": [],
   "author": "Yiyi Sun <yiyisun@gmail.com>",
