@@ -133,20 +133,75 @@ You can also define custom query that has joins to other tables. You can not def
 
 ## Key Fields
 
-Primary key fields are defined as PK. if you define the key fields for the _users_ table as _id_, then the api path will be _/api/users/:id_.
+Primary key fields are defined as ***PK***. if you define the key fields for the _users_ table as _id_, then the api path will be _/api/users/:id_.
 
-Fields that are used for search criteria can be defined as search key, SK. The search key fields will be used to generate the api path. E.g. _/api/users_posts/byUser/:id_
+Fields that are used for search criteria can be defined as search key, ***SK***. The search key fields will be used to generate the api path. E.g. _/api/users_posts/byUser/:id_
 
 
-## Azure Functions App (Experimental)
-
-The tool also generates the code for Azure Functions app (V4). The code is in the _app-azure.js_
 
 ## Authentication
 
-### Global Authentication
+You can denine the authentication from the two types authentication: _jwtAuth_ and _apiKeyAuth_ in the config file.
 
-### Route Level Authentication
+```yaml
+authentication: jwtAuth
+```
+or
+```yaml
+authentication: apiKeyAuth
+```
+
+Then, you can appy the authentication to the routes by adding the '*' sign.
+
+```yaml
+    - table: users
+        post*:
+          - varchar name
+          - varchar email
+        put*:
+          - int id PK
+          - varchar name
+          - varchar email
+        delete*:
+          - int id PK
+        patch-name*:
+          - int id PK
+          - varchar name
+        patch-email*:
+          - int id PK
+          - varchar email
+```
+
+Fianlly, you need to implement the authentication middleware in the _server.js_ file.
+
+```javascript
+// TODO: implement authentication
+app.authentication = (_, __, next) => next();
+```
+
+By default, if you use _jwtAuth_, you get the authentication as follows:
+
+```javascript
+const jwt = require('jsonwebtoken');
+app.authentication = (req, res, next) => {
+  const SECRET_KEY = procees.env.SECRET_KEY;
+  const token = req.headers['authorization'];
+  if (!token) {
+    return res.status(403).send('Token not provided.');
+  }
+  jwt.verify(token, SECRET_KEY, (err, decoded) => {
+    if (err) {
+      return res.status(403).send('Failed to authenticate token.');
+    }
+    req.userId = decoded.userId; // Attach used id to the request object
+    req.roles = decoded.roles;  // Attach roles to the request object
+    next();
+  });
+}
+```
+
+
+
 
 ## License
 

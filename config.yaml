@@ -3,6 +3,7 @@ name: My API app
 port: 8080
 public: public
 path: /api
+authentication: jwtAuth # or apiKeyAuth
 databases:
   - type: mssql
     name: mydb
@@ -18,24 +19,24 @@ databases:
           - varchar email
           - datetime created_at
           - datetime updated_at
-        post:
+        post*:
           - varchar name
           - varchar email
-        put:
+        put*:
           - int id PK
           - varchar name
           - varchar email
-        delete:
+        delete*:
           - int id PK
-        patch-name:
+        patch-name*:
           - int id PK
           - varchar name
-        patch-email:
+        patch-email*:
           - int id PK
           - varchar email
 
       - procedure: usp_update_user
-        post:
+        post*:
           - int id
           - varchar name
           - varchar email

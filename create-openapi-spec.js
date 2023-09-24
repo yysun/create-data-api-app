@@ -31,7 +31,7 @@ const parameters = fields => fields.map(
     `).join('');
 
 
-const create_method = ({ method, name, func, fields, keys }) =>
+const create_method = ({ method, name, func, fields, keys, authentication }) =>
   method === 'get' || method === 'delete' ? `
     ${method}:
       tags:
@@ -46,6 +46,7 @@ const create_method = ({ method, name, func, fields, keys }) =>
       tags:
         - ${name}
       summary: ${func}
+      ${authentication ? `${security}` : ''}
       requestBody:
         required: true
         content:
@@ -74,15 +75,20 @@ const create_api = database => {
 
   return Object.keys(paths).map(path => `
   ${path}:
-${paths[path].map(p=>create_method(p)).join('')}
+${paths[path].map(p => create_method(p)).join('')}
 `).join('');
 
 }
 
-module.exports = ({ name, version, port, databases }) => {
+let security;
+
+module.exports = ({ name, version, port, authentication, databases }) => {
+
+  security = authentication ? `security:
+        - ${authentication} : []` : '';
 
   const apis = !databases || !databases.length ? '' :
-    databases.map(d => create_api(d)).join('\n');
+    databases.map(d => create_api(d)).join('');
 
   return `openapi: '3.0.0'
 info:
@@ -92,6 +98,17 @@ servers:
   - url: https://localhost:${port}
 
 paths:${apis}
+${authentication ? `
+components:
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: API-KEY
+`: ''}
 `;
 
 }

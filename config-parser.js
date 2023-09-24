@@ -27,20 +27,21 @@ module.exports = file => {
       const obj_keys = Object.keys(obj);
 
       let name, type;
-      if (obj_keys.includes('table')) {
+      if (obj_keys[0] === 'table' || obj_keys[0] === 'view') {
         name = obj.table;
         type = 'table';
-      } else if (obj_keys.includes('query')) {
+      } else if (obj_keys[0] === 'query') {
         name = obj.query;
         type = 'query';
-      } else if (obj_keys.includes('procedure')) {
+      } else if (obj_keys[0] === 'procedure') {
         name = obj.procedure;
         type = 'procedure';
-      }
+      } else return;
 
-      Object.keys(obj).forEach(key => {
-        if (key === 'table' || key === 'query' || key === 'procedure' || key === 'select') return;
-        let [method, path] = key.split('-');
+      obj_keys.forEach(key => {
+        if (key === 'table' || key === 'query' || key === 'procedure' || key === 'select' || key === 'view') return;
+        const authentication = key.includes('*');
+        let [method, path] = key.replace(/\*/g, '').split('-');
         const fields = parse_fields(obj[key]);
         obj[key] = fields;
 
@@ -51,7 +52,7 @@ module.exports = file => {
           if (keys.length > 0) {
             path += keys.map(key => `/:${key.name}`).join('');
           }
-          if (keys.length === 1 && keys.find(f=>f.keys.includes('PK'))) {
+          if (keys.length === 1 && keys.find(f => f.keys.includes('PK'))) {
             path = `${name}/:${keys[0].name}`;
           }
         }
@@ -65,6 +66,7 @@ module.exports = file => {
           path,
           method,
           fields,
+          authentication,
           keys: fields.filter(f => f.keys),
           key_names: fields.filter(f => f.keys).map(f => `${f.name}`),
           field_names: fields.map(f => `${f.name}`)

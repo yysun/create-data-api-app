@@ -54,7 +54,7 @@ module.exports.mydb = {
 
 ---
 
-### You will also need code for API endpoint.
+### You will also need code for API route.
 
 >
 
@@ -76,7 +76,7 @@ app.listen(port, () => {
 
 ---
 
-### What about so many to write?
+### Then, if there are many routes to write?
 
 ```yaml
 databases:
@@ -115,7 +115,7 @@ node server
 
 ---
 
-Plus, you also get the specification of the API.
+### Plus, you also get the OpenApi spec.
 
 >
 
@@ -126,15 +126,10 @@ info:
   version: "1.0"
 servers:
   - url: https://localhost:8080
-
 paths:
   /api/users:
-
     get:
-      tags:
-        - users
       summary: users:get
-
       responses:
         '200':
           description: OK
@@ -142,7 +137,7 @@ paths:
 
 ---
 
-And, some code for testing.
+### And, some code for testing.
 
 ```
 @host=http://localhost:8080
@@ -164,9 +159,11 @@ Content-Type: application/json
 
 ---
 
-Try it yourself!
+### Try it yourself!
 
 # npx create-data-api-app
 
-[https://github.com/yysun/create-data-api-app/](https://github.com/yysun/create-data-api-app/)
+* [Quick start](quick-start.index)
+
+* [Github](https://github.com/yysun/create-data-api-app/)
 
