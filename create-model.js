@@ -89,7 +89,7 @@ function createStoredProcedure({ name, fields }) {
   "${name}": async ({
     ${fields.map(f => `${f.name}`).join(', ')}
   }) => {
-    const result = await sql.query\`EXEC ${name}
+    const result = await sql.query\`${name}
       ${fields.map(f => `\${${f.name}}`).join(', ')}\`;
     return result.recordset;
   },
