@@ -5,8 +5,7 @@ public: public
 path: /api
 authentication: jwtAuth # or apiKeyAuth
 databases:
-  - type: mssql
-    name: mydb
+  - name: mydb
     objects:
       - table: users
         get:
