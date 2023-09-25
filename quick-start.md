@@ -4,16 +4,17 @@ theme: uncover
 class: invert
 paginate: true
 ---
+<style>
+  section :is(pre,marp-pre)>code { padding: 0.8em 5.8em; }
+</style>
 
-_create-data-api-app_
+create-data-api-app
 # Quick start tutorial
 
-<br/><br/>
-
-No installation required
+(No installation required)
 <br/>
 
-We only need to create config.yaml.
+All we need is to create _config.yaml_.
 
 ---
 
@@ -37,21 +38,20 @@ path: /api
 databases:
   - name: mydb
     objects:
-      table: users
+      - table: users
+      - view: v_users
+      - stored_procedure: sp_users
 ```
 
 ---
 
-### Step 3: add paths
+### Step 3: add paths and fields
 
 ```yaml
-name: My API app
-port: 8080
-path: /api
 databases:
   - name: mydb
     objects:
-      table: users
+     - table: users
         get:
           - int id
           - varchar name
@@ -61,7 +61,8 @@ databases:
           - varchar name
           - varchar email
           - datetime created_at
-
+          - datetime updated_at
+          - ......
 ```
 
 ---

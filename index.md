@@ -4,7 +4,9 @@ theme: uncover
 class: invert
 paginate: true
 ---
-
+<style>
+  section :is(pre,marp-pre)>code { padding: 0.8em 5.8em; }
+</style>
 Hi, developers!
 
 ## Read this spec first
@@ -15,14 +17,12 @@ port: 8080
 path: /api
 databases:
   - objects:
-    - name: mydb
       - table: users
         get:
           - int id
           - varchar name
           - varchar email
 ```
-
 <!-- footer: press [space] to continue -->
 
 ---
@@ -31,9 +31,12 @@ Can you write a database API app in a few minutes?
 
 ## Let's get started!
 
+
+
 ---
 
-### You will need code for database access.
+### You will code SQL for database.
+
 
 >
 
@@ -55,7 +58,7 @@ module.exports.mydb = {
 
 ---
 
-### You will also need code the route.
+### You will also code the API route.
 
 >
 
@@ -77,7 +80,7 @@ app.listen(port, () => {
 
 ---
 
-### Then, if there are many routes to write?
+### Then, if there are many of such to code
 
 ```yaml
 databases:
@@ -105,12 +108,10 @@ It certainly takes time to write all of them. What if you can
 npx create-data-api-app
 ```
 
----
-
-## And run code in a few seconds.
+### And run code in a few seconds.
 
 ```bash
-node server
+node server.js
 ```
 
 ---
@@ -158,6 +159,8 @@ Content-Type: application/json
 ```
 
 ---
+
+<!-- footer: the end -->
 
 ### Try it yourself!
 

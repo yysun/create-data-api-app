@@ -7,43 +7,43 @@ databases:
     objects:
       - table: users
 
-        # POST /api/users/login - authentication
+        # authentication
         post /users/login:
           - varchar username
           - varchar password
 
-        # POST /api/users - registration
+        # registration
         post:
           - varchar username
           - varchar email
           - varchar password
 
-        # GET /api/user - get current user
+        # get current user
         get* /user:
           - varchar username PK
           - varchar email
           - varchar bio
           - varchar image
 
-        # PUT /api/user - update user
+        # update user
         put* /user:
           - varchar username PK
           - varchar email
           - varchar bio
           - varchar image
 
-        # GET /api/profiles/:username
+        # get profile
         get /api/profiles/:username:
           - varchar username PK
           - varchar bio
           - varchar image
           - boolean following
 
-        # POST /api/profiles/:username/follow
+        # follow user
         post* /api/profiles/:username/follow:
           - varchar username PK
 
-        # DELETE /api/profiles/:username/unfollow
+        # unfollow user
         delete* /api/profiles/:username/unfollow:
           - varchar username PK
 
@@ -109,14 +109,18 @@ databases:
 
 
       - table: favorite
+
+        # like an article
         post* /articles/:slug/favorite:
           - varchar username PK
           - varchar slug PK
 
+        # unlike an article
         delete* /articles/:slug/favorite:
           - varchar username PK
           - varchar slug PK
 
       - table: tags
-        # GET /api/tags
+
+        # get tags
         get:

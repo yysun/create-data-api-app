@@ -1,22 +1,40 @@
 # A command line tool to generate restful api for database
 
-We often need to write a restful API for database. This tool can generate the api code for you based on the configuration defined in the config yaml file.
+We often need to write a restful API for database. This tool can generate the api code for you based on the configuration defined in one config file.
 
-> The design idea is to let you define how to access the database. This tool will not try to model operations for entities.
+You use the generated code as a start point for your projects. But don't expect it to generate everything. So, configuration was designed to be simple yet practical enough to get the initial code generated. Then, continue to develop your projects. It can save you a lot of repeatitive coding time and let you focus on the business logic.
+
+> The design idea is to let you define the api paths and how to the access the database objects, such as tables, views, custom queries, and stored procedures.
+>
+> You can define the fields/columns you want to retrieve and update. You can also define the fields for search criteria. This tool will generate the code and SQL statements for you.
+>
+> This tool will not generate generic entity CRUD.
 
 ## Usage
 
 ```bash
 npx create data-api-app [-c config.ymal] [source directory]
 ```
+
+## Configuration
+
+The configuration file is config.yaml by default. It is located in the root folder of your project. See [a simple config](config.yaml) or [the config](realworld-example.yaml) for the [RealWorld API](https://realworld-docs.netlify.app/docs/specs/backend-specs/endpoints/) for examples.
+
+```yaml
+name: My API app
+port: 8080
+path: /api
+databases:
+  - objects:
+      - table: users
 ```
+
 
 ## Express app
 
-The tool generates source code: _server.js_, _app-express.js, _and _model.js. You can run the app by running the following command:
+The tool generates three source code files: _server.js_, _app-express.js_, and _model.js_. You can run the app by running the following command:
 
 ```bash
-npm install express body-parser mssql
 node server.js
 ```
 The app will listen on the port that you defined in the config file.
@@ -29,26 +47,11 @@ require('./app-express')(app);
 
 In the _model.js_ file, it uses _mssql_ package to connect to MS SQL Server.
 
-## API Specification
+> More database types will be supported in the future.
 
-The tool also generates the api specification in the _api.yaml_ file.
+## Database
 
-## Configuration Explained
-
-The configuration file is the config.yaml file. It is located in the root folder of the project. See [this config.yaml](config.yaml) for example.
-
-```yaml
-name: My API app
-port: 8080
-public: public
-path: /api
-databases:
-  - objects:
-      - table: users
-```
-
-
-## Table
+### Table
 
 Table can use the following methods:
 
@@ -98,7 +101,7 @@ In real world, there could be multiple ways of creating records, retrieving reco
       - int id PK
 ```
 
-## Views
+### View
 
 Access to views are similar to tables. Only GET method is supported. You can define the fields that you want to retrieve. And the fields for search criteria.
 
@@ -114,7 +117,7 @@ Access to views are similar to tables. Only GET method is supported. You can def
       - varchar email
 ```
 
-## Stored Procedures
+### Stored Procedure
 
 Calls to the stored procedures are straight forward. You define the parameters.
 
@@ -128,7 +131,7 @@ Calls to the stored procedures are straight forward. You define the parameters.
       - datetime updated_at
 ```
 
-## Custom Query
+### Custom Query
 
 You can also define custom query that has joins to other tables. You can not define the fields that you want to retrieve. It is defined by the query. But, you still can define the fields for search criteria. And define the field names for api. E.g. the field name in the query is _u.id_, but you want to use _id_ in the api.
 
@@ -140,7 +143,7 @@ You can also define custom query that has joins to other tables. You can not def
       - int id FK "u.id"
 ```
 
-## Fields
+### Fields
 
 Each field is defined in one line. The format is as follows:
 
@@ -186,7 +189,7 @@ Paths are generated as /{object name}. But you can also explictly define the pat
 
 ## Authentication
 
-You can denine the authentication from the two types authentication: _jwtAuth_ and _apiKeyAuth_ in the config file.
+You can denine the authentication: _jwtAuth_ or _apiKeyAuth_ in the config file.
 
 ```yaml
 authentication: jwtAuth
@@ -221,13 +224,6 @@ Then, you can appy the authentication to the routes by adding the '*' sign.
       - int id PK
 ```
 
-Fianlly, you need to implement the authentication middleware in the _server.js_ file.
-
-```javascript
-// TODO: implement authentication
-app.authentication = (_, __, next) => next();
-```
-
 By default, if you use _jwtAuth_, you get the authentication as follows:
 
 ```javascript
@@ -248,6 +244,18 @@ app.authentication = (req, res, next) => {
   });
 }
 ```
+
+You can modify and implement the authentication middleware in the _server.js_ file.
+
+```javascript
+// TODO: implement authentication
+app.authentication = (_, __, next) => next();
+```
+
+## API Specification (Experimental)
+
+The tool also generates the api specification in the _api-spec.yaml_ file.
+
 
 
 ## License
