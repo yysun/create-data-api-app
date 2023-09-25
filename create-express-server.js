@@ -1,6 +1,7 @@
 module.exports = ({ name, port, public, authentication }) => {
 
-  return `const express = require('express');
+  return `require('dotenv').config();
+const express = require('express');
 const bodyParser = require('body-parser')
 const app = express();
 app.use(bodyParser.json());

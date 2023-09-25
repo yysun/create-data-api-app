@@ -1,15 +1,15 @@
 const init = `
-require('dotenv').config();
 const sql = require('mssql');
 const conn_str = process.env['SQL_CONNECTION_STRING'];`;
 
 const connect = `
 (async function connect() {
   try {
+    if(!conn_str) throw new Error('SQL_CONNECTION_STRING not set');
     await sql.connect(conn_str);
     console.log('Connected to database');
   } catch (err) {
-    console.error(err);
+    console.error(err.message + ': ' + conn_str);
   }
 })();`;
 
