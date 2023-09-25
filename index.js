@@ -1,4 +1,5 @@
 const fs = require('fs');
+const execSync = require('child_process').execSync;
 
 const createReadme = require('./create-readme');
 const createTest = require('./create-http-test');
@@ -8,10 +9,10 @@ const createExpressServer = require('./create-express-server');
 const createAzureApp = require('./create-azure-app');
 const createOpenAPISpec = require('./create-openapi-spec');
 
-const configParser = require('./config-parser');
 
 module.exports = ({ conf, cwd }) => {
 
+  const configParser = require('./config-parser');
   const config = configParser(conf);
 
   fs.writeFileSync(`${cwd}/model.js`, createModel(config));
@@ -22,4 +23,8 @@ module.exports = ({ conf, cwd }) => {
   fs.writeFileSync(`${cwd}/README.md`, createReadme(config));
   fs.writeFileSync(`${cwd}/api-spec.yaml`, createOpenAPISpec(config));
 
+  if (!fs.existsSync(`${cwd}/package.json`)) {
+    execSync(`npm init -y`, { cwd });
+  }
+  execSync(`npm install --save express body-parser dotenv jsonwebtoken mssql`, { cwd });
 }
