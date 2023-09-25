@@ -41,28 +41,28 @@ module.exports = file => {
       obj_keys.forEach(key => {
         if (key === 'table' || key === 'query' || key === 'procedure' || key === 'select' || key === 'view') return;
         const authentication = key.includes('*');
-        let [method, path] = key.replace(/\*/g, '').split('-');
+        let [method, path] = key.replace(/\*/g, '').split(' ');
         const fields = parse_fields(obj[key]);
         obj[key] = fields;
 
-        path = `${name}${path ? '/' + path : ''}`;
+        path = path || `/${name}`;
         method = method.toLowerCase();
-        if (method === 'get' || method === 'delete') {
-          const keys = fields.filter(field => field.keys);
-          if (keys.length > 0) {
-            path += keys.map(key => `/:${key.name}`).join('');
-          }
-          if (keys.length === 1 && keys.find(f => f.keys.includes('PK'))) {
-            path = `${name}/:${keys[0].name}`;
-          }
-        }
+        // if (method === 'get' || method === 'delete') {
+        //   const keys = fields.filter(field => field.keys);
+        //   if (keys.length > 0) {
+        //     path += keys.map(key => `/:${key.name}`).join('');
+        //   }
+        //   if (keys.length === 1 && keys.find(f => f.keys.includes('PK'))) {
+        //     path = `/${name}/:${keys[0].name}`;
+        //   }
+        // }
 
         const prefix = config.databases.length > 1 ? `/${db.name}` : '';
-        path = `${config.path}${prefix}/${path}`
+        path = `${config.path}${prefix}${path}`
         const api = {
           name,
           type,
-          func: `${name}:${key}`,
+          func: `${name}.${key}`,
           path,
           method,
           fields,

@@ -12,7 +12,7 @@ databases:
           - int id
           - varchar name
           - varchar email
-        get-id:
+        get /users:id:
           - int id PK
           - varchar name
           - varchar email
@@ -27,10 +27,10 @@ databases:
           - varchar email
         delete*:
           - int id PK
-        patch-name*:
+        patch* /users/name:
           - int id PK
           - varchar name
-        patch-email*:
+        patch* /users/email:
           - int id PK
           - varchar email
 
@@ -45,7 +45,7 @@ databases:
       - query: users_posts
         select: select * from users u join posts p on u.id = p.user_id
         get:
-        get-byUser:
-          - int id SK "u.id"
+        get /post/:user_id:
+          - int user_id FK "u.id"
 
 

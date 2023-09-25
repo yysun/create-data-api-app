@@ -5,19 +5,19 @@ class: invert
 paginate: true
 ---
 
+_create-data-api-app_
 # Quick start tutorial
 
-of _create-data-api-app_
-<br/>
+<br/><br/>
 
-### No installation required
+No installation required
 <br/>
 
 We only need to create config.yaml.
 
 ---
 
-### Step 1: describe your API server
+### Step 1: describe your server
 
 ```yaml
 name: My API app
@@ -42,7 +42,7 @@ databases:
 
 ---
 
-### Step 3: add access methods
+### Step 3: add paths
 
 ```yaml
 name: My API app
@@ -56,7 +56,7 @@ databases:
           - int id
           - varchar name
           - varchar email
-        get-id:
+        get: /users:id:
           - int id PK
           - varchar name
           - varchar email
@@ -66,26 +66,11 @@ databases:
 
 ---
 
-### Step 3: generate code
+### Step 3: generate code and run the app
 
 ```bash
 npx create-data-api-app
-```
 
----
-
-### Step 4: run the app
-
-1. add sql server connection string to .env file
-
-```
-SQL_CONNECTION_STRING=Server=SQL;Database=mydb;Integrated Security=true;
-```
-
-2. run the app
-
-```bash
-npm init -y
-npm install express body-parser mssql
 node server.js
 ```
+

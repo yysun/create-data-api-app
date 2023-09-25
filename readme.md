@@ -62,34 +62,40 @@ Each method has corresponding fields that you will need to provide.
 
 ```yaml
   - table: users
-        get:
-          - int id
-          - varchar name
-          - varchar email
-        post:
-          - varchar name
-          - varchar email
+    get:
+      - int id
+      - varchar name
+      - varchar email
+    post:
+      - varchar name
+      - varchar email
 
 ```
 
-In real world, there could be multiple ways of creating records, retrieving records and updating records. Therefore, you can define multiple methods with different combinations of fields as you need.
+In real world, there could be multiple ways of creating records, retrieving records and updating records. Therefore, you can define multiple paths with different combinations of fields as you need.
 
 ```yaml
   - table: users
-        get:
-          - int id
-          - varchar name
-          - varchar email
-        get-byId:
-          - int id PK
-          - varchar name
-          - varchar email
-        patch-name:
-          - int id PK
-          - varchar name
-        patch-email:
-          - int id PK
-          - varchar email
+    get:
+      - int id
+      - varchar name
+      - varchar email
+    get /users:id:
+      - int id PK
+      - varchar name
+      - varchar email
+    post:
+      - int id PK
+      - varchar name
+      - varchar email
+    patch /uses/name:
+      - int id PK
+      - varchar name
+    patch /uses/email:
+      - int id PK
+      - varchar email
+    delete /users:id:
+      - int id PK
 ```
 
 ## Views
@@ -98,10 +104,14 @@ Access to views are similar to tables. Only GET method is supported. You can def
 
 ```yaml
   - view: v_users
-        get:
-          - int id
-          - varchar name PK
-          - varchar email
+    get:
+      - int id
+      - varchar name
+      - varchar email
+    get /users:id:
+      - int id
+      - varchar name PK
+      - varchar email
 ```
 
 ## Stored Procedures
@@ -109,13 +119,13 @@ Access to views are similar to tables. Only GET method is supported. You can def
 Calls to the stored procedures are straight forward. You define the parameters.
 
 ```yaml
-      - procedure: usp_update_user
-        post:
-          - int id
-          - varchar name
-          - varchar email
-          - datetime created_at
-          - datetime updated_at
+  - procedure: usp_update_user
+    post:
+      - int id
+      - varchar name
+      - varchar email
+      - datetime created_at
+      - datetime updated_at
 ```
 
 ## Custom Query
@@ -123,21 +133,56 @@ Calls to the stored procedures are straight forward. You define the parameters.
 You can also define custom query that has joins to other tables. You can not define the fields that you want to retrieve. It is defined by the query. But, you still can define the fields for search criteria. And define the field names for api. E.g. the field name in the query is _u.id_, but you want to use _id_ in the api.
 
 ```yaml
-      - query: users_posts
-        select: select * from users u join posts p on u.id = p.user_id
-        get:
-        get-byUser:
-          - int id SK "u.id"
+  - query: users_posts
+    select: select * from users u join posts p on u.id = p.user_id
+    get:
+    get /posts/:userid/:
+      - int id FK "u.id"
 ```
 
+## Fields
 
-## Key Fields
+Each field is defined in one line. The format is as follows:
 
-Primary key fields are defined as ***PK***. if you define the key fields for the _users_ table as _id_, then the api path will be _/api/users/:id_.
+```yaml
+# type name keys alias
+- int id FK "u.id"
+```
 
-Fields that are used for search criteria can be defined as search key, ***SK***. The search key fields will be used to generate the api path. E.g. _/api/users_posts/byUser/:id_
+When the fields are PK (primary key), FK (foreign key), or SK (search key), they will be used to generate the SQL where clause. The alias is used in SQL if provided. For example, the following path:
 
+```yaml
+  - query: users_posts
+    select: select * from users u join posts p on u.id = p.user_id
+    get /posts/:user_id:
+      - int user_id FK "u.id"
+```
 
+will generate the following SQL statement:
+
+```javascript
+await sql.query`select * from users u join posts p on u.id = p.user_id WHERE u.id = ${id}`;
+```
+
+## Paths
+
+Paths are generated as /{object name}. But you can also explictly define the path.
+
+```yaml
+  - table: users
+
+    # default path is /users
+    get:
+      - int id
+      - varchar name
+      - varchar email
+
+    # explicit path
+    get /users:id:
+      - int id PK
+      - varchar name
+      - varchar email
+```
 
 ## Authentication
 
@@ -154,22 +199,26 @@ authentication: apiKeyAuth
 Then, you can appy the authentication to the routes by adding the '*' sign.
 
 ```yaml
-    - table: users
-        post*:
-          - varchar name
-          - varchar email
-        put*:
-          - int id PK
-          - varchar name
-          - varchar email
-        delete*:
-          - int id PK
-        patch-name*:
-          - int id PK
-          - varchar name
-        patch-email*:
-          - int id PK
-          - varchar email
+  - table: users
+    get:
+      - int id
+      - varchar name
+      - varchar email
+    get* /users:id:
+      - int id PK
+      - varchar name
+      - varchar email
+    post*:
+      - varchar name
+      - varchar email
+    patch* /uses/name:
+      - int id PK
+      - varchar name
+    patch* /uses/email:
+      - int id PK
+      - varchar email
+    delete* /users:id:
+      - int id PK
 ```
 
 Fianlly, you need to implement the authentication middleware in the _server.js_ file.
@@ -199,8 +248,6 @@ app.authentication = (req, res, next) => {
   });
 }
 ```
-
-
 
 
 ## License

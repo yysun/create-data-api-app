@@ -14,14 +14,16 @@ name: My API app
 port: 8080
 path: /api
 databases:
-  - type: mssql
-    objects:
+  - objects:
+    - name: mydb
       - table: users
         get:
           - int id
           - varchar name
           - varchar email
 ```
+
+<!-- footer: press [space] to continue -->
 
 ---
 
@@ -40,13 +42,12 @@ module.exports.mydb = {
 
   "users:get": async () => {
 
-    const query = `SELECT
+    const result = await sql.query`SELECT
       id,
       name,
       email
     FROM users `;
 
-    const result = await sql.query(query);
     return result.recordset;
   },
 }
@@ -54,7 +55,7 @@ module.exports.mydb = {
 
 ---
 
-### You will also need code for API route.
+### You will also need code the route.
 
 >
 
@@ -84,14 +85,13 @@ databases:
     objects:
       - table: users
         get:
-        get-id:
+        get id:
         post:
         put:
         delete:
-        patch-name:
-        patch-email:
+        patch name:
+        patch email:
       - procedure: usp_update_user
-        post:
       - query: users_posts
 ```
 
