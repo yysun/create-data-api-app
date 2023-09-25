@@ -78,6 +78,5 @@ module.exports = file => {
     });
 
   });
-  console.log(JSON.stringify(config, null, 2));
   return config;
 }
