@@ -27,27 +27,29 @@ function createGet({ name, select, field_names, keys }) {
 
   const where = !keys || keys.length === 0 ? '' :
     `WHERE
-${keys.map(f => `      ${f.comment||f.name} = \${${f.name}}`).join(' AND\n')}`;
+${keys.map(f => `      ${f.comment || f.name} = \${${f.name}}`).join(' AND\n')}`;
 
   return `
-    const query = \`${select} ${where}\`;
+    const result = await sql.query\`${select} ${where}\`;
+    return result.recordset;
 `;
 }
 
 function createPost({ name, field_names }) {
   return `
-    const query = \`INSERT INTO ${name} (
+    const result = await sql.query\`INSERT INTO ${name} (
 ${field_names.map(f => `      ${f}`).join(',\n')}
     ) VALUES (
 ${field_names.map(f => `      \${${f}}`).join(',\n')}
     )\`;
+    return result.recordset;
 `;
 
 }
 
 function createPut({ name, field_names, key_names }) {
   return `
-    const query = \`MERGE INTO ${name} WITH (HOLDLOCK) AS target
+    const result = await sql.query\`MERGE INTO ${name} WITH (HOLDLOCK) AS target
     USING (VALUES (
 ${field_names.map(f => `      \${${f}}`).join(',\n')}
     )) AS source (
@@ -64,24 +66,27 @@ ${field_names.map(f => `        ${f}`).join(',\n')}
       ) VALUES (
 ${field_names.map(f => `        source.${f}`).join(',\n')}
       );\`;
+
+    return result.recordset;
 `;
 
 }
 
 function createDelete({ name, key_names }) {
   return `
-    const query = \`DELETE FROM ${name} WHERE
+    const result = await sql.query\`DELETE FROM ${name} WHERE
 ${key_names.map(f => `      ${f} = \${${f}}`).join(' AND\n')}\`;
 `;
 }
 
 function createPatch({ name, field_names, key_names }) {
   return `
-    const query = \`UPDATE ${name} SET
+    const result = await sql.query\`UPDATE ${name} SET
 ${field_names.map(f => `      ${f} = \${${f}}`).join(',\n')}
     WHERE
 ${key_names.map(f => `      ${f} = \${${f}}`).join(' AND\n')}\`;
 `;
+  return result.recordset;
 }
 
 function createStoredProcedure({ name, fields }) {
@@ -121,8 +126,6 @@ const create_method = path => {
 
   return `  "${func}": async (${inputs}) => {
     ${create_sql(path)}
-    const result = await sql.query(query);
-    return result.recordset;
   },
   `
 };
