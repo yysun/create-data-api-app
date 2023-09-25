@@ -166,7 +166,7 @@ Content-Type: application/json
 
 # npx create-data-api-app
 
-- [Quick start](quick-start.index)
+- [Quick start](quick-start.html)
 
 - [Github](https://github.com/yysun/create-data-api-app/)
 

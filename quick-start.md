@@ -8,6 +8,8 @@ paginate: true
   section :is(pre,marp-pre)>code { padding: 0.8em 5.8em; }
 </style>
 
+<!-- footer: Visit [create-data-api-app on Github](https://github.com/yysun/create-data-api-app/) -->
+
 create-data-api-app
 # Quick start tutorial
 
@@ -39,8 +41,6 @@ databases:
   - name: mydb
     objects:
       - table: users
-      - view: v_users
-      - stored_procedure: sp_users
 ```
 
 ---
@@ -48,21 +48,24 @@ databases:
 ### Step 3: add paths and fields
 
 ```yaml
+name: My API app
+port: 8080
+path: /api
 databases:
   - name: mydb
     objects:
-     - table: users
+      - table: users
         get:
           - int id
           - varchar name
           - varchar email
-        get: /users:id:
+        get /users:id:
           - int id PK
           - varchar name
           - varchar email
-          - datetime created_at
-          - datetime updated_at
-          - ......
+        post:
+          - varchar name
+          - varchar email
 ```
 
 ---
@@ -74,4 +77,9 @@ npx create-data-api-app
 
 node server.js
 ```
+<br/>
+
+That's it!
+
+Download [config.yaml](quick-start-config.yaml).
 
