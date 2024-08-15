@@ -45,7 +45,7 @@ databases:
       - query: users_posts
         select: select * from users u join posts p on u.id = p.user_id
         get:
-        get /post/:user_id:
+        post /post/:user_id:
           - int user_id FK "u.id"
 
 
