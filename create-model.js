@@ -21,6 +21,8 @@ process.on('SIGINT', () => {
   });
 });`;
 
+const validator = {};
+
 function createGet({ name, select, field_names, keys }) {
   const selectList = field_names.map(f => `      ${f}`).join(',\n');
   select = select || `SELECT\n${selectList}\n    FROM ${name}`;
@@ -76,6 +78,7 @@ function createDelete({ name, key_names }) {
   return `
     const result = await sql.query\`DELETE FROM ${name} WHERE
 ${key_names.map(f => `      ${f} = \${${f}}`).join(' AND\n')}\`;
+    return result.recordset;
 `;
 }
 
@@ -85,8 +88,8 @@ function createPatch({ name, field_names, key_names }) {
 ${field_names.map(f => `      ${f} = \${${f}}`).join(',\n')}
     WHERE
 ${key_names.map(f => `      ${f} = \${${f}}`).join(' AND\n')}\`;
+    return result.recordset;
 `;
-  return result.recordset;
 }
 
 function createStoredProcedure({ name, fields }) {
@@ -116,6 +119,18 @@ const create_sql = (path) => {
   }
 };
 
+const create_validation = (func, inputs) => {
+  return inputs.split(',').map(f => {
+    f = f.trim();
+    if(!f) return '';
+    if (!validator[func]) validator[func] = {};
+    validator[func][f] = f => {
+      if (!f) throw new Error(`${f} is invalid`);
+    }
+    return `
+    if (!validator['${func}']['${f}'](${f})) throw new Error('${f} is invalid');`
+  }).join('');
+}
 
 const create_method = path => {
   const { name, func, method } = path;
@@ -125,6 +140,7 @@ const create_method = path => {
   }
 
   return `  "${func}": async (${inputs}) => {
+    ${create_validation(func, inputs)}
     ${create_sql(path)}
   },
   `
@@ -143,7 +159,10 @@ ${database.paths.map(path => {
   return create_method(path);
 
 }).join('\n')}
-}`;
+}
+
+const validator = ${JSON.stringify(validator, null, 2)};
+`;
 
 module.exports = ({ databases }) => {
 
