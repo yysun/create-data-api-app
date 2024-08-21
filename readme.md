@@ -91,13 +91,13 @@ In real world, there could be multiple ways of creating records, retrieving reco
       - int id PK
       - varchar name
       - varchar email
-    patch /uses/name:
+    patch /name:
       - int id PK
       - varchar name
-    patch /uses/email:
+    patch /email:
       - int id PK
       - varchar email
-    delete /users:id:
+    delete :id:
       - int id PK
 ```
 
@@ -111,7 +111,7 @@ Access to views are similar to tables. Only GET method is supported. You can def
       - int id
       - varchar name
       - varchar email
-    get /users:id:
+    get /:id:
       - int id
       - varchar name PK
       - varchar email
@@ -214,13 +214,13 @@ Then, you can appy the authentication to the routes by adding the '*' sign.
     post*:
       - varchar name
       - varchar email
-    patch* /uses/name:
+    patch* /name:
       - int id PK
       - varchar name
-    patch* /uses/email:
+    patch* /email:
       - int id PK
       - varchar email
-    delete* /users:id:
+    delete* /:id:
       - int id PK
 ```
 

@@ -53,7 +53,7 @@ module.exports = file => {
         const fields = parse_fields(obj[key]);
         obj[key] = fields;
 
-        path = path || `/${name}`;
+        path = `/${name}${path ? `${path}` : ''}`;
         method = method.toLowerCase();
         // if (method === 'get' || method === 'delete') {
         //   const keys = fields.filter(field => field.keys);
