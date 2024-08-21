@@ -29,7 +29,7 @@ const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
 
 const refreshTokens = []; // In a real app, use a database
 
-app.authenticate = (req, res, next) => {
+app.authentication = (req, res, next) => {
   const accessToken = req.headers['authorization'];
   if (!accessToken) {
     return res.status(401).send('Access Denied. No token provided.');
