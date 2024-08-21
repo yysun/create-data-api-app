@@ -5,7 +5,7 @@ const { resolve  } = require('path');
 program
   .name('create-data-api-app')
   .description('Create a data API app')
-  .version('1.1.2')
+  .version('1.1.5')
   .arguments('[cwd]', 'Source directory')
   .option('-c, --config <config>', 'Path to config file', './config.yaml')
   .option('-i, --info', 'print parsed configueation', false)

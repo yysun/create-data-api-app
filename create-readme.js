@@ -37,9 +37,9 @@ node server.js
 [http://localhost:${port}](http://localhost:${port})
 
 ## API
-\`\`\`
-[api-spec.yaml](api-spec.yaml)
-\`\`\`
+
+[api-spec](api-spec.yaml)
+
 `;
 };
 
