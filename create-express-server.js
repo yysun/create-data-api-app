@@ -5,6 +5,21 @@ const express = require('express');
 const bodyParser = require('body-parser')
 const app = express();
 app.use(bodyParser.json());
+// Regular logging middleware for successful requests
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    req.time = new Date(Date.now()).toString();
+    console.log('Success:', req.user, req.path, req.time);
+  });
+  next();
+});
+
+// Error-handling middleware for logging errors
+app.use((err, req, res, next) => {
+  req.time = new Date(Date.now()).toString();
+  console.error('Error occurred:', err.message, req.user, req.path, req.time);
+  res.status(500).send('Internal Server Error');
+});
 ${public && `app.use(express.static('${public}'));` || ''}
 
 ${authentication === 'jwtAuth' ? `const jwt = require('jsonwebtoken');
@@ -19,17 +34,11 @@ app.authenticate = (req, res, next) => {
   if (!accessToken) {
     return res.status(401).send('Access Denied. No token provided.');
   }
-  try {
-    jwt.verify(token, accessTokenSecret, (err, user) => {
-      if (err) {
-        return res.sendStatus(403);
-      }
-      req.user = user;
-      next();
-    });
-  } catch (error) {
-    return res.sendStatus(403);
-  }
+  jwt.verify(token, accessTokenSecret, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
 };
 
 const createToken = (user, res) => {
@@ -40,19 +49,15 @@ const createToken = (user, res) => {
     .send(accessToken);
 }
 app.post('/auth/register', async (req, res) => {
-}
+});
 
 app.post('/auth/login', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    const user = {}; // await verify( username, password });
-    if (!user) {
-      return res.status(401).json({ error: 'Authentication failed' });
-    }
-    createToken(user, res);
-  } catch (error) {
-    res.status(500).json({ error: 'Login failed' });
+  const { username, password } = req.body;
+  const user = {}; // await verify( username, password });
+  if (!user) {
+    return res.status(401).json({ error: 'Authentication failed' });
   }
+  createToken(user, res);
 });
 
 app.post('/auth/refresh', (req, res) => {
