@@ -1,7 +1,15 @@
 const fs = require('fs');
+const path = require('path');
 const yaml = require('js-yaml');
 
 module.exports = file => {
+
+  let config_exists = fs.existsSync(file);
+  if (!config_exists) {
+    console.log(`Config file not found: ${file}. \nCreating an example config.yaml`);
+    const example_file = path.join(__dirname, 'config.yaml');
+    fs.copyFileSync(example_file, file);
+  }
 
   const configFile = fs.readFileSync(file, 'utf8');
   const config = yaml.load(configFile);
@@ -71,8 +79,6 @@ module.exports = file => {
           key_names: fields.filter(f => f.keys).map(f => `${f.name}`),
           field_names: fields.map(f => `${f.name}`)
         };
-
-
         db.paths.push(api);
       });
     });
