@@ -5,6 +5,7 @@ const create_api = database => database.paths.map(
   app.${method}('${path}', ${authentication}async (req, res) => {
 ${key_names.map(key => `    const ${key} = req.params.${key};`).join('\n')}
     const result = await model.${database.name}['${func}'](${key_names.join(', ')});
+    ${method === 'get' ? '//res.setHeader("Cache-Control", "public, max-age=86400");' : ''}
     res.json(result);
   });
 `: `
