@@ -9,13 +9,18 @@ const createExpressServer = require('./create-express-server');
 const createAzureApp = require('./create-azure-app');
 const createOpenAPISpec = require('./create-openapi-spec');
 
+const ensure = dir => {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+};
 
 module.exports = ({ conf, cwd, info }) => {
+
+  ensure(cwd);
 
   const configParser = require('./config-parser');
   const config = configParser(conf);
   info && console.log(JSON.stringify(config, null, 2));
-  
+
   fs.writeFileSync(`${cwd}/model.js`, createModel(config));
   fs.writeFileSync(`${cwd}/app-express.js`, createExpressApp(config));
   fs.writeFileSync(`${cwd}/server.js`, createExpressServer(config));
@@ -29,6 +34,6 @@ SQL_CONNECTION_STRING=Server=localhost;Database=mydb;Trusted_Connection=True;
 
   if (!fs.existsSync(`${cwd}/package.json`)) {
     execSync(`npm init -y`, { cwd });
+    // execSync(`npm install --save express body-parser dotenv jsonwebtoken mssql`, { cwd });
   }
-  execSync(`npm install --save express body-parser dotenv jsonwebtoken mssql`, { cwd });
 }
