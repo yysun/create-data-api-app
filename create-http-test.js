@@ -8,6 +8,7 @@ const create_api = database => database.paths.map(
     } else {
       return `###\n${method} {{host}}${path}
 Content-Type: application/json
+
 {
 ${field_names.map(key => `  "${key}": ""`).join(',\n')}
 }
