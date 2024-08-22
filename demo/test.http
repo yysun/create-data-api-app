@@ -1,0 +1,112 @@
+@host=http://localhost:8080
+
+###
+POST {{host}}/api/users/login
+Content-Type: application/json
+{
+  "username": "",
+  "password": ""
+}
+
+
+###
+POST {{host}}/api/users
+Content-Type: application/json
+{
+  "username": "",
+  "email": "",
+  "password": ""
+}
+
+
+###
+GET {{host}}/api/user
+
+###
+PUT {{host}}/api/user
+Content-Type: application/json
+{
+  "username": "",
+  "email": "",
+  "bio": "",
+  "image": ""
+}
+
+
+###
+GET {{host}}/api/api/profiles/:username
+
+###
+POST {{host}}/api/api/profiles/:username/follow
+Content-Type: application/json
+{
+  "username": ""
+}
+
+
+###
+DELETE {{host}}/api/api/profiles/:username/unfollow
+
+###
+GET {{host}}/api/articles
+
+###
+GET {{host}}/api/articles
+
+###
+GET {{host}}/api/articles/:slug
+
+###
+POST {{host}}/api/articles
+Content-Type: application/json
+{
+  "title": "",
+  "description": "",
+  "body": "",
+  "tagList": ""
+}
+
+
+###
+PUT {{host}}/api/articles/:slug
+Content-Type: application/json
+{
+  "title": "",
+  "description": "",
+  "body": "",
+  "tagList": ""
+}
+
+
+###
+DELETE {{host}}/api/articles
+
+###
+POST {{host}}/api/articles/:slug/comments
+Content-Type: application/json
+{
+  "slug": "",
+  "body": ""
+}
+
+
+###
+GET {{host}}/api/articles/:slug/comments
+
+###
+DELETE {{host}}/api/articles/:slug/comments/:id
+
+###
+POST {{host}}/api/articles/:slug/favorite
+Content-Type: application/json
+{
+  "username": "",
+  "slug": ""
+}
+
+
+###
+DELETE {{host}}/api/articles/:slug/favorite
+
+###
+GET {{host}}/api/tags

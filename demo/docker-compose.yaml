@@ -1,0 +1,22 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: yes
+    volumes:
+      - ./db/mysql:/var/lib/mysql
+  mssql:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    container_name: mssql
+    ports:
+      - "1433:1433"
+    environment:
+      MSSQL_SA_PASSWORD:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+    volumes:
+      - ./db/mssql:/var/opt/mssql
