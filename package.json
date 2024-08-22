@@ -22,10 +22,10 @@
   },
   "homepage": "https://github.com/yysun/create-data-api-app#readme",
   "dependencies": {
-    "commander": "^11.0.0",
+    "commander": "^12.1.0",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.1.4"
   }
 }

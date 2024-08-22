@@ -4,6 +4,7 @@ port: 8080
 public: public
 path: /api
 authentication: jwtAuth # or apiKeyAuth
+database: mysql
 databases:
   - name: mydb
     objects:

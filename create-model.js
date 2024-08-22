@@ -1,30 +1,11 @@
-const init = `
-const sql = require('mssql');
-const conn_str = process.env['SQL_CONNECTION_STRING'];`;
-
-const connect = `
-(async function connect() {
-  try {
-    if(!conn_str) throw new Error('SQL_CONNECTION_STRING not set');
-    await sql.connect(conn_str);
-    console.log('Connected to database');
-  } catch (err) {
-    console.error(err.message + ': ' + conn_str);
-  }
-})();`;
-
-const close = `
-process.on('SIGINT', () => {
-  sql.close(() => {
-    console.log('Database connection closed');
-    process.exit();
-  });
-});`;
+const init = `//@ts-check
+const sql = require('./db');`;
 
 const validator = {};
 
 function createGet({ name, select, field_names, keys }) {
-  const selectList = field_names.map(f => `      ${f}`).join(',\n');
+  const selectList = field_names.length === 0 ? '      *' :
+    field_names.map(f => `      ${f}`).join(',\n');
   select = select || `SELECT\n${selectList}\n    FROM ${name}`;
 
   const where = !keys || keys.length === 0 ? '' :
@@ -33,7 +14,7 @@ ${keys.map(f => `      ${f.comment || f.name} = \${${f.name}}`).join(' AND\n')}`
 
   return `
     const result = await sql.query\`${select} ${where}\`;
-    return result.recordset;
+    return result;
 `;
 }
 
@@ -44,7 +25,7 @@ ${field_names.map(f => `      ${f}`).join(',\n')}
     ) VALUES (
 ${field_names.map(f => `      \${${f}}`).join(',\n')}
     )\`;
-    return result.recordset;
+    return result;
 `;
 
 }
@@ -69,7 +50,7 @@ ${field_names.map(f => `        ${f}`).join(',\n')}
 ${field_names.map(f => `        source.${f}`).join(',\n')}
       );\`;
 
-    return result.recordset;
+    return result;
 `;
 
 }
@@ -78,7 +59,7 @@ function createDelete({ name, key_names }) {
   return `
     const result = await sql.query\`DELETE FROM ${name} WHERE
 ${key_names.map(f => `      ${f} = \${${f}}`).join(' AND\n')}\`;
-    return result.recordset;
+    return result;
 `;
 }
 
@@ -88,7 +69,7 @@ function createPatch({ name, field_names, key_names }) {
 ${field_names.map(f => `      ${f} = \${${f}}`).join(',\n')}
     WHERE
 ${key_names.map(f => `      ${f} = \${${f}}`).join(' AND\n')}\`;
-    return result.recordset;
+    return result;
 `;
 }
 
@@ -99,7 +80,7 @@ function createStoredProcedure({ name, fields }) {
   }) => {
     const result = await sql.query\`${name}
       ${fields.map(f => `\${${f.name}}`).join(', ')}\`;
-    return result.recordset;
+    return result;
   },
 `
 }
@@ -122,13 +103,11 @@ const create_sql = (path) => {
 const create_validation = (func, inputs) => {
   return inputs.split(',').map(f => {
     f = f.trim();
-    if(!f) return '';
+    if (!f) return '';
     if (!validator[func]) validator[func] = {};
-    validator[func][f] = f => {
-      if (!f) throw new Error(`${f} is invalid`);
-    }
+    validator[func][f] = {};
     return `
-    if (!validator['${func}']['${f}'](${f})) throw new Error('${f} is invalid');`
+    if (!validate('${func}', '${f}', ${f})) throw new Error('${f} is invalid');`
   }).join('');
 }
 
@@ -162,6 +141,10 @@ ${database.paths.map(path => {
 }
 
 const validator = ${JSON.stringify(validator, null, 2)};
+
+function validate(func, name, f) {
+  return validator[func][name](f);
+}
 `;
 
 module.exports = ({ databases }) => {
@@ -170,8 +153,6 @@ module.exports = ({ databases }) => {
     databases.map(d => create_model(d)).join('\n');
 
   return `${init}
-${connect}
-${close}
 ${models}
 `;
 

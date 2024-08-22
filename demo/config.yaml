@@ -2,6 +2,7 @@ name: RealWorld app
 port: 8080
 path: /api
 authentication: jwtAuth
+database: mysql2
 databases:
   - name: mydb
     objects:
@@ -50,25 +51,19 @@ databases:
       - table: articles
 
         # list articles
-        get: /articles?
+        get:
           - varchar slug
           - varchar title
-          - varchar descriptopn
           - varchar body
-          - varchar tagList
-          - boolean favorited
-          - int favoritesCount
-          - object author
 
         # feed articles
-        get*  /articles/feed:
+        get* /articles/feed:
 
 
         # get article
         get /articles/:slug:
           - varchar slug PK
           - varchar title
-          - ...
 
         # create article
         post*:

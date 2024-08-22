@@ -8,6 +8,7 @@ const createExpressApp = require('./create-express-app');
 const createExpressServer = require('./create-express-server');
 const createAzureApp = require('./create-azure-app');
 const createOpenAPISpec = require('./create-openapi-spec');
+const createDB = require('./create-db');
 
 const ensure = dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -28,12 +29,11 @@ module.exports = ({ conf, cwd, info }) => {
   fs.writeFileSync(`${cwd}/test.http`, createTest(config));
   fs.writeFileSync(`${cwd}/README.md`, createReadme(config));
   fs.writeFileSync(`${cwd}/api-spec.yaml`, createOpenAPISpec(config));
-  fs.writeFileSync(`${cwd}/.env`, `
-SQL_CONNECTION_STRING=Server=localhost;Database=mydb;Trusted_Connection=True;
-  `);
+
+  const db = createDB(cwd, config) || '';
 
   if (!fs.existsSync(`${cwd}/package.json`)) {
     execSync(`npm init -y`, { cwd });
-    // execSync(`npm install --save express body-parser dotenv jsonwebtoken mssql`, { cwd });
   }
+  execSync(`npm install express body-parser dotenv jsonwebtoken ${db}`, { cwd });
 }
