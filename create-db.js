@@ -1,4 +1,5 @@
-const { writeFileSync, copyFileSync} = require('fs');
+//@ts-check
+const { writeFileSync, copyFileSync } = require('fs');
 
 module.exports = (cwd, config) => {
   const { database } = config;

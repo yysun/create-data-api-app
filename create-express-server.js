@@ -1,3 +1,4 @@
+//@ts-check
 module.exports = ({ name, port, public, authentication }) => {
 
   return `require('dotenv').config();

@@ -1,3 +1,4 @@
+//@ts-check
 const init = `//@ts-check
 const sql = require('./db');`;
 

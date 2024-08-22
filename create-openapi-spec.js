@@ -1,3 +1,4 @@
+//@ts-check
 const map_type = type => {
   switch (type) {
     case 'int':

@@ -1,3 +1,4 @@
+//@ts-check
 const create_api = database => database.paths.map(
   ({ path, method, field_names }) => {
 
