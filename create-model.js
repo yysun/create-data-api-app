@@ -100,27 +100,27 @@ const create_sql = (path) => {
   }
 };
 
-const create_validation = (func, inputs) => {
+const create_validation = (key, inputs) => {
   return inputs.split(',').map(f => {
     f = f.trim();
     if (!f) return '';
-    if (!validator[func]) validator[func] = {};
-    validator[func][f] = {};
+    if (!validator[key]) validator[key] = {};
+    validator[key][f] = {};
     return `
-    if (!validate('${func}', '${f}', ${f})) throw new Error('${f} is invalid');`
+    if (!validate('${key}', '${f}', ${f})) throw new Error('${f} is invalid');`
   }).join('');
 }
 
-const create_method = path => {
-  const { name, func, method } = path;
-  let inputs = path.field_names.join(', ');
+const create_method = pathDef => {
+  const { path, method } = pathDef;
+  let inputs = pathDef.field_names.join(', ');
   if (method === 'get' || method === 'delete') {
-    inputs = path.key_names.join(', ');
+    inputs = pathDef.key_names.join(', ');
   }
-
-  return `  "${func}": async (${inputs}) => {
-    ${create_validation(func, inputs)}
-    ${create_sql(path)}
+  const key = `${method} ${path}`;
+  return `  "${key}": async (${inputs}) => {
+    ${create_validation(key, inputs)}
+    ${create_sql(pathDef)}
   },
   `
 };
