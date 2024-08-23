@@ -12,6 +12,7 @@ var db = mysql.createPool({
 
 process.on('SIGINT', () => {
   db.end();
+  process.exit(1);
 });
 
 const query = async (...params) => {
