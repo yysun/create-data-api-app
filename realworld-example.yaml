@@ -1,9 +1,10 @@
-name: My API app
+name: RealWorld app
 port: 8080
 path: /api
 authentication: jwtAuth
-databases:
-  - name: mydb
+database: mysql2
+models:
+  - name: users
     objects:
       - table: users
 
@@ -47,28 +48,24 @@ databases:
         delete* /api/profiles/:username/unfollow:
           - varchar username PK
 
+  - name: articles
+    objects:
       - table: articles
 
         # list articles
-        get: /articles?
+        get:
           - varchar slug
           - varchar title
-          - varchar descriptopn
           - varchar body
-          - varchar tagList
-          - boolean favorited
-          - int favoritesCount
-          - object author
 
         # feed articles
-        get*  /articles/feed:
+        get* /articles/feed:
 
 
         # get article
         get /articles/:slug:
           - varchar slug PK
           - varchar title
-          - ...
 
         # create article
         post*:

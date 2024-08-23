@@ -140,21 +140,21 @@ ${database.paths.map(path => {
 
 }).join('\n')}
 }
+`;
+
+module.exports = ({ databases }) => {
+
+  if( !databases || !databases.length ) return '';
+  const src = databases.map(module => create_model(module)).join('\n');
+
+  return `${init}
+${src}
 
 const validator = ${JSON.stringify(validator, null, 2)};
 
 function validate(func, name, f) {
   return validator[func][name](f);
 }
-`;
-
-module.exports = ({ databases }) => {
-
-  const models = !databases || !databases.length ? '' :
-    databases.map(d => create_model(d)).join('\n');
-
-  return `${init}
-${models}
 `;
 
 }

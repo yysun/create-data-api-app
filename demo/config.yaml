@@ -3,8 +3,8 @@ port: 8080
 path: /api
 authentication: jwtAuth
 database: mysql2
-databases:
-  - name: mydb
+models:
+  - name: users
     objects:
       - table: users
 
@@ -48,6 +48,8 @@ databases:
         delete* /api/profiles/:username/unfollow:
           - varchar username PK
 
+  - name: articles
+    objects:
       - table: articles
 
         # list articles

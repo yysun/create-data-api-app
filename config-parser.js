@@ -26,11 +26,10 @@ module.exports = file => {
     });
 
 
-  config.databases.forEach(db => {
-
-    db.paths = [];
-
-    db.objects.forEach(obj => {
+  const { models } = config;
+  models.forEach(model => {
+    model.paths = [];
+    model.objects.forEach(obj => {
 
       const obj_keys = Object.keys(obj);
 
@@ -53,21 +52,9 @@ module.exports = file => {
         const fields = parse_fields(obj[key]);
         obj[key] = fields;
 
-        // path = `/${name}${path ? `${path}` : ''}`;
         path = path || `/${name}`;
         method = method.toLowerCase();
-        // if (method === 'get' || method === 'delete') {
-        //   const keys = fields.filter(field => field.keys);
-        //   if (keys.length > 0) {
-        //     path += keys.map(key => `/:${key.name}`).join('');
-        //   }
-        //   if (keys.length === 1 && keys.find(f => f.keys.includes('PK'))) {
-        //     path = `/${name}/:${keys[0].name}`;
-        //   }
-        // }
-
-        const prefix = config.databases.length > 1 ? `/${db.name}` : '';
-        path = `${config.path}${prefix}${path}`
+        path = `${config.path}${path}`
         const api = {
           name,
           type,
@@ -80,10 +67,11 @@ module.exports = file => {
           key_names: fields.filter(f => f.keys).map(f => `${f.name}`),
           field_names: fields.map(f => `${f.name}`)
         };
-        db.paths.push(api);
+        model.paths.push(api);
       });
     });
 
   });
+  config.databases = models;
   return config;
 }

@@ -5,7 +5,7 @@ public: public
 path: /api
 authentication: jwtAuth # or apiKeyAuth
 database: mysql
-databases:
+models:
   - name: mydb
     objects:
       - table: users
