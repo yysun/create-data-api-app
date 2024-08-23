@@ -15,8 +15,10 @@ Hi, developers!
 name: My API app
 port: 8080
 path: /api
-databases:
-  - objects:
+database: mysql
+models:
+  - name: users
+    objects:
       - table: users
         get:
           - int id
@@ -83,8 +85,8 @@ app.listen(port, () => {
 ### Then, if there are many of such to code
 
 ```yaml
-databases:
-  - type: mssql
+models:
+  - name: users
     objects:
       - table: users
         get:

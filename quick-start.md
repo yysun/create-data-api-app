@@ -20,13 +20,13 @@ All we need is to create _config.yaml_.
 
 ---
 
-### Step 1: describe your server
+### Step 1: describe your server and database
 
 ```yaml
 name: My API app
 port: 8080
 path: /api
-databases:
+database: mysql
 ```
 
 ---
@@ -37,7 +37,7 @@ databases:
 name: My API app
 port: 8080
 path: /api
-databases:
+models:
   - name: mydb
     objects:
       - table: users
@@ -51,7 +51,7 @@ databases:
 name: My API app
 port: 8080
 path: /api
-databases:
+models:
   - name: mydb
     objects:
       - table: users
