@@ -35,5 +35,8 @@ module.exports = ({ conf, cwd, info }) => {
   if (!fs.existsSync(`${cwd}/package.json`)) {
     execSync(`npm init -y`, { cwd });
   }
-  execSync(`npm install express body-parser dotenv jsonwebtoken ${db}`, { cwd });
+  execSync(`npm install express body-parser dotenv jsonwebtoken`, { cwd });
+
+  if (db === 'mssql') execSync(`npm install mssql`, { cwd });
+  if (db === 'mysql' || db === 'mysql2') execSync(`npm install mysql2 sql-template-strings`, { cwd });
 }

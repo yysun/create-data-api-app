@@ -3,7 +3,7 @@ const { writeFileSync, copyFileSync } = require('fs');
 
 module.exports = (cwd, config) => {
   const { database } = config;
-  if (database === 'mysql2') {
+  if (database === 'mysql2' || database === 'mysql') {
     copyFileSync(`${__dirname}/db-mysql.js`, `${cwd}/db.js`);
     writeFileSync(`${cwd}/.env`, `
 MYSQL_SERVER=localhost

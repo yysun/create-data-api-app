@@ -2,7 +2,7 @@ name: RealWorld app
 port: 8080
 path: /api
 authentication: jwtAuth
-database: mysql2
+database: mysql
 models:
   - name: users
     objects:
