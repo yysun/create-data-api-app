@@ -6,7 +6,7 @@ path: /api
 authentication: jwtAuth # or apiKeyAuth
 database: mysql
 models:
-  - name: mydb
+  - name: users
     objects:
       - table: users
         get:
@@ -28,10 +28,10 @@ models:
           - varchar email
         delete*:
           - int id PK
-        patch* users/name:
+        patch* /users/name:
           - int id PK
           - varchar name
-        patch* users/email:
+        patch* /users/email:
           - int id PK
           - varchar email
 

@@ -2,12 +2,11 @@ name: RealWorld app
 port: 8080
 path: /api
 authentication: jwtAuth
-database: mysql
+database: mysql2
 models:
   - name: users
     objects:
       - table: users
-
         # authentication
         post /users/login:
           - varchar username
@@ -50,18 +49,16 @@ models:
 
   - name: articles
     objects:
+      # list articles
+      - procedure: usp_articles
+        get: /articles
+
+      # feed articles
+      - procedure: usp_articles_feed
+        get*: /articles/feed
+          - varchar username PK
+
       - table: articles
-
-        # list articles
-        get:
-          - varchar slug
-          - varchar title
-          - varchar body
-
-        # feed articles
-        get* /articles/feed:
-
-
         # get article
         get /articles/:slug:
           - varchar slug PK
@@ -117,7 +114,8 @@ models:
           - varchar username PK
           - varchar slug PK
 
+  - name: tags
+    objects:
       - table: tags
-
         # get tags
         get:

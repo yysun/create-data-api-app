@@ -1,7 +1,8 @@
 name: My API app
 port: 8080
 path: /api
-databases:
+database: mysql
+models:
   - name: mydb
     objects:
       - table: users

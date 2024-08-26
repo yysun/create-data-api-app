@@ -1,55 +1,68 @@
 # A command line tool to generate restful api for database
 
-We often need to write a restful API for database. This tool can generate the api code for you based on the configuration defined in one config file.
+We often need to write a restful API for database. This tool can generate the api code for you  as a start point for your projects based on the configuration defined in one config file. Then, continue to develop your projects. It can save you a lot of repeatitive coding time and let you focus on the business logic.
 
-You use the generated code as a start point for your projects. But don't expect it to generate everything. So, configuration was designed to be simple yet practical enough to get the initial code generated. Then, continue to develop your projects. It can save you a lot of repeatitive coding time and let you focus on the business logic.
+The design idea is to let you define the api paths and how to the access the database objects, such as tables, views, custom queries, and stored procedures.
 
-> The design idea is to let you define the api paths and how to the access the database objects, such as tables, views, custom queries, and stored procedures.
->
-> You can define the fields/columns you want to retrieve and update. You can also define the fields for search criteria. This tool will generate the code and SQL statements for you.
->
-> This tool will not generate generic entity CRUD.
+You can define the fields/columns you want to retrieve and update. You can also define the fields for search criteria. This tool will generate the code and SQL statements for you.
+
+This tool will not generate generic entity CRUD.
 
 ## Usage
 
 ```bash
-npx create data-api-app [-c config.ymal] [source directory]
+npx create data-api-app [-c config.ymal] [target directory]
 ```
 
 ## Configuration
 
-The configuration file is config.yaml by default. It is located in the root folder of your project. See [a simple config](config.yaml) or [the config](realworld-example.yaml) for the [RealWorld API](https://realworld-docs.netlify.app/docs/specs/backend-specs/endpoints/) for examples.
+The configuration file is config.yaml by default. It is located in the root folder of your project. See [a simple config](config.yaml) or [the config](demo/realworld-example.yaml) for the [RealWorld API](https://realworld-docs.netlify.app/docs/specs/backend-specs/endpoints/) for examples.
 
 ```yaml
 name: My API app
 port: 8080
 path: /api
-databases:
-  - objects:
+database: mysql
+models:
+  - name: users
+    objects:
       - table: users
+        get:
+          - int id
+          - varchar name
+          - varchar email
 ```
 
 
 ## Express app
 
-The tool generates three source code files: _server.js_, _app-express.js_, and _model.js_. You can run the app by running the following command:
+The tool generates three source code files: `server.js`. You can run the app by running the following command:
 
 ```bash
 node server.js
 ```
 The app will listen on the port that you defined in the config file.
 
-You can also bring the code of _app-express.js_ into your existing express app.
 
-```javascript
-require('./app-express')(app);
+
+
+## Models
+
+A model has a collection of objects. Each object can be a table, view, stored procedure, or custom query. Each model will generate a router file under the `api` folder. And a model file under the `model` folder.
+
+```
+api
+  - users.js
+  - articles.js
+  - tags.js
+model
+  - users.js
+  - articles.js
+  - tags.js
 ```
 
-In the _model.js_ file, it uses _mssql_ package to connect to MS SQL Server.
+The  `server.js` will import the routes and models from the `api` folder dynamically.
 
-> More database types will be supported in the future.
-
-## Database
 
 ### Table
 
@@ -236,7 +249,7 @@ app.post('/auth/refresh', async (req, res) => {});
 
 ```
 
-You can modify and implement the authentication middleware in the _server.js_ file.
+You can modify and implement the authentication middleware in the `server.js` file.
 
 ```javascript
 // TODO: implement authentication
@@ -245,8 +258,7 @@ app.authentication = (_, __, next) => next();
 
 ## API Specification (Experimental)
 
-The tool also generates the api specification in the _api-spec.yaml_ file.
-
+The tool also generates the api specification in the `api-spec.yaml` file.
 
 
 ## License
@@ -255,6 +267,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Have fun!
 
-(C) 2023 Yiyi Sun, All Rights Reserved.
+(C) 2024 Yiyi Sun, All Rights Reserved.
 
 

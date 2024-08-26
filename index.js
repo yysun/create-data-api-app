@@ -14,13 +14,9 @@ const ensure = dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 };
 
-module.exports = ({ conf, cwd, info }) => {
+module.exports = (cwd, config) => {
 
   ensure(cwd);
-
-  const configParser = require('./config-parser');
-  const config = configParser(conf);
-  info && console.log(JSON.stringify(config, null, 2));
 
   fs.writeFileSync(`${cwd}/model.js`, createModel(config));
   fs.writeFileSync(`${cwd}/app-express.js`, createExpressApp(config));
