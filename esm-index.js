@@ -8,29 +8,61 @@ const createExpressServer = require('./esm-create-server');
 const createOpenAPISpec = require('./create-openapi-spec');
 const create_db = require('./esm-create-db');
 const create_model = require('./esm-create-model');
+const { create } = require('domain');
 
 const ensure = dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 };
 
-
-const create_api = (name, paths) => paths.map((pathDef) => {
-  let { method, path, key_names, authentication } = pathDef;
-  authentication = authentication ? 'auth, ' : '';
-  return (method === 'get' || method === 'delete') ? `
-app.${method}('${path}', ${authentication}async (req, res) => {
-${key_names.map(key => `    const ${key} = req.params.${key};`).join('\n')}
-  const result = await ${name}['${method} ${path}'](${key_names.join(', ')});
-  ${method === 'get' ? '//res.setHeader("Cache-Control", "public, max-age=86400");' : ''}
+const create_get_delete = (name, method, path, key_names, authentication) => {
+  let text = `
+app.${method}('${path}', ${authentication}async (req, res) => {\n`;
+  if (key_names.length) {
+    text += `  const querySchema = z.object({
+${key_names.map(key => `    ${key}: z.string().min(1, '${key} is required'),`).join('\n')}
+  });
+  const parsedQuery = querySchema.safeParse(req.query);
+  if (!parsedQuery.success) {
+    return res.status(400).json({ errors: parsedQuery.error.errors });
+  }
+  const query = parsedQuery.data;
+  const result = await ${name}['${method} ${path}'](query);\n`
+  } else {
+    if (method === 'delete') text += `// Delete evertyhing - ${path}?\n`;
+    text += `  const result = await ${name}['${method} ${path}']({});\n`;
+  }
+  text += `  ${method === 'get' ? '//res.setHeader("Cache-Control", "public, max-age=86400");' : ''}
   res.json(result);
 });
-`: `
+
+`;
+  return text;
+}
+
+const create_post_put = (name, method, path, field_names, authentication) => `
 app.${method}('${path}', ${authentication}async (req, res) => {
-  const body = req.body;
+  const bodySchema = z.object({
+${field_names.map(key => `    ${key}: z.string().min(1, '${key} is required'),`).join('\n')}
+  });
+  const parsedBody = bodySchema.safeParse(req.body);
+  if (!parsedBody.success) {
+    return res.status(400).json({ errors: parsedBody.error.errors });
+  }
+  const body = parsedBody.data;
   const result = await ${name}['${method} ${path}'](body);
   res.json(result);
 });
-`});
+
+`
+
+
+const create_api = (name, paths) => paths.map((pathDef) => {
+  let { method, path, key_names, field_names, authentication } = pathDef;
+  authentication = authentication ? 'auth, ' : '';
+  return (method === 'get' || method === 'delete') ?
+    create_get_delete(name, method, path, key_names, authentication) :
+    create_post_put(name, method, path, field_names, authentication);
+});
 
 
 const create_routes = (model, config) => {
@@ -42,6 +74,7 @@ const create_routes = (model, config) => {
 
   const content = `//@ts-check
 import express from 'express';
+import {z} from 'zod';
 import ${name} from '../models/${name}.js';
 import auth from '../auth.js';
 const app = express.Router();
@@ -84,7 +117,7 @@ module.exports = (cwd, config) => {
     fs.writeFileSync(`${cwd}/package.json`, JSON.stringify(json, null, 2));
   }
 
-  execSync(`npm install apprun apprun-site dotenv jsonwebtoken`, { cwd });
+  execSync(`npm install apprun apprun-site dotenv jsonwebtoken zod`, { cwd });
   if (db === 'mssql') execSync(`npm install mssql`, { cwd });
   if (db === 'mysql' || db === 'mysql2') execSync(`npm install mysql2 sql-template-strings`, { cwd });
 }

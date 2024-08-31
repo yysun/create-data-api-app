@@ -1,7 +1,6 @@
 //@ts-check
 const fs = require('fs');
 
-let validator = {};
 
 function createGet({ name, select, field_names, keys }) {
   const selectList = field_names.length === 0 ? '      *' :
@@ -75,11 +74,11 @@ ${key_names.map(f => `      ${f} = \${${f}}`).join(' AND\n')}\`;
 
 function createStoredProcedure({ name, fields }) {
   return `
-  "${name}": async ({
-    ${fields.map(f => `${f.name}`).join(', ')}
-  }) => {
+  "${name}": async ({${fields.map(f => `${f.name}`).join(', ')}}) => {
+    ${fields.length === 0 ? `
+    const result = await sql.query\`${name}\`` : `
     const result = await sql.query\`${name}
-      ${fields.map(f => `\${${f.name}}`).join(', ')}\`;
+      ${fields.map(f => `\${${f.name}}`).join(', ')}\`;`}
     return result;
   },
 `
@@ -100,16 +99,6 @@ const create_sql = (path) => {
   }
 };
 
-const create_validation = (key, inputs) => {
-  return inputs.split(',').map(f => {
-    f = f.trim();
-    if (!f) return '';
-    if (!validator[key]) validator[key] = {};
-    validator[key][f] = {};
-    return `
-    if (!validate('${key}', '${f}', ${f})) throw new Error('${f} is invalid');`
-  }).join('');
-}
 
 const create_method = pathDef => {
   const { path, method } = pathDef;
@@ -118,8 +107,7 @@ const create_method = pathDef => {
     inputs = pathDef.key_names.join(', ');
   }
   const key = `${method} ${path}`;
-  return `  "${key}": async (${inputs}) => {
-    ${create_validation(key, inputs)}
+  return `"${key}": async ({${inputs}}) => {
     ${create_sql(pathDef)}
   },
   `
@@ -127,7 +115,6 @@ const create_method = pathDef => {
 
 module.exports = (model, config) => {
 
-  validator = {};
 
   const { model_path } = config;
   const { name, paths } = model;
@@ -145,24 +132,15 @@ module.exports = (model, config) => {
     } else {
       return create_method(path);
     }
-  }).join('');
+  }).join('\n');
 
-  const validator_content = Object.keys(validator).length === 0 ? '' : `
-const validator = ${JSON.stringify(validator, null, 2)};
-function validate(func, name, f) {
-  return validator[func][name](f);
-}`;
-
-    JSON.stringify(validator, null, 2);
 
   const content = `//@ts-check
 import sql from '../db.js';
 
 export default {
-  ${services}
+${services}
 }
-
-${validator_content}
 `;
   fs.writeFileSync(model_file, content);
 }
