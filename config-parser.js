@@ -58,7 +58,7 @@ module.exports = file => {
         const api = {
           name,
           type,
-          func: `${name}.${key}`,
+          func: `${name} ${key}`,
           path,
           method,
           fields,
