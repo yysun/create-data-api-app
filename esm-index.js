@@ -15,45 +15,43 @@ const ensure = dir => {
 };
 
 const create_get_delete = (name, method, path, key_names, authentication) => {
-  let text = `
-app.${method}('${path}', ${authentication}async (req, res) => {\n`;
-  if (key_names.length) {
-    text += `  const querySchema = z.object({
-${key_names.map(key => `    ${key}: z.string().min(1, '${key} is required'),`).join('\n')}
-  });
-  const parsedQuery = querySchema.safeParse(req.query);
-  if (!parsedQuery.success) {
-    return res.status(400).json({ errors: parsedQuery.error.errors });
+  const inputs = key_names.join(', ');
+  const setCache = method === 'get' ? '    //res.setHeader("Cache-Control", "public, max-age=86400");' : '';
+  const validate = key_names.length ? `
+  validate_query({
+  ${key_names.map(key => `    ${key}: z.string().min(1, '${key} is required'),`).join('\n')}
+  }),` : ``;
+  return `
+app.${method}('${path}', ${authentication}${validate}
+  async (req, res) => {
+
+${inputs.length ? `    const {${inputs}} = req.query;
+    const result = await ${name}['${method} ${path}'](${inputs});` :
+      `    const result = await ${name}['${method} ${path}']();`}
+${setCache}
+    res.json(result);
   }
-  const query = parsedQuery.data;
-  const result = await ${name}['${method} ${path}'](query);\n`
-  } else {
-    if (method === 'delete') text += `// Delete evertyhing - ${path}?\n`;
-    text += `  const result = await ${name}['${method} ${path}']({});\n`;
-  }
-  text += `  ${method === 'get' ? '//res.setHeader("Cache-Control", "public, max-age=86400");' : ''}
-  res.json(result);
-});
+);
 
 `;
-  return text;
 }
 
-const create_post_put = (name, method, path, field_names, authentication) => `
-app.${method}('${path}', ${authentication}async (req, res) => {
-  const bodySchema = z.object({
+const create_post_put = (name, method, path, field_names, authentication) => {
+  const inputs = field_names.join(', ');
+  return `
+app.${method}('${path}', ${authentication}
+  validate_body({
 ${field_names.map(key => `    ${key}: z.string().min(1, '${key} is required'),`).join('\n')}
-  });
-  const parsedBody = bodySchema.safeParse(req.body);
-  if (!parsedBody.success) {
-    return res.status(400).json({ errors: parsedBody.error.errors });
+  }),
+  async (req, res) => {
+    const {${inputs}} = req.query;
+    const result = await ${name}['${method} ${path}'](${inputs});
+    res.json(result);
   }
-  const body = parsedBody.data;
-  const result = await ${name}['${method} ${path}'](body);
-  res.json(result);
-});
+);
 
-`
+`;
+};
 
 
 const create_api = (name, paths) => paths.map((pathDef) => {
@@ -77,6 +75,7 @@ import express from 'express';
 import {z} from 'zod';
 import ${name} from '../models/${name}.js';
 import auth from '../auth.js';
+import { validate_body, validate_query } from '../validate.js';
 const app = express.Router();
 ${apis}
 export default app;
@@ -99,6 +98,7 @@ module.exports = (cwd, config) => {
   });
 
   fs.copyFileSync(`${__dirname}/esm-auth.js`, `${cwd}/auth.js`);
+  fs.copyFileSync(`${__dirname}/esm-val.js`, `${cwd}/validate.js`);
   fs.writeFileSync(`${cwd}/server.js`, createExpressServer(config));
   fs.writeFileSync(`${cwd}/test.http`, createTest(config));
   fs.writeFileSync(`${cwd}/README.md`, createReadme(config));

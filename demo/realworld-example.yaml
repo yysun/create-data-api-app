@@ -51,11 +51,11 @@ models:
     objects:
       # list articles
       - procedure: usp_articles
-        get: /articles
+        get /articles:
 
       # feed articles
       - procedure: usp_articles_feed
-        get*: /articles/feed
+        get* /articles/feed:
           - varchar username PK
 
       - table: articles

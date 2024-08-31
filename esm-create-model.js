@@ -74,7 +74,7 @@ ${key_names.map(f => `      ${f} = \${${f}}`).join(' AND\n')}\`;
 
 function createStoredProcedure({ name, fields }) {
   return `
-  "${name}": async ({${fields.map(f => `${f.name}`).join(', ')}}) => {
+  "${name}": async (${fields.map(f => `${f.name}`).join(', ')}) => {
     ${fields.length === 0 ? `
     const result = await sql.query\`${name}\`` : `
     const result = await sql.query\`${name}
@@ -107,14 +107,13 @@ const create_method = pathDef => {
     inputs = pathDef.key_names.join(', ');
   }
   const key = `${method} ${path}`;
-  return `"${key}": async ({${inputs}}) => {
+  return `"${key}": async (${inputs}) => {
     ${create_sql(pathDef)}
   },
   `
 };
 
 module.exports = (model, config) => {
-
 
   const { model_path } = config;
   const { name, paths } = model;
