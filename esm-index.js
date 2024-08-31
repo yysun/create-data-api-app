@@ -8,7 +8,6 @@ const createExpressServer = require('./esm-create-server');
 const createOpenAPISpec = require('./create-openapi-spec');
 const create_db = require('./esm-create-db');
 const create_model = require('./esm-create-model');
-const { create } = require('domain');
 
 const ensure = dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -18,13 +17,12 @@ const create_get_delete = (name, method, path, key_names, authentication) => {
   const inputs = key_names.join(', ');
   const setCache = method === 'get' ? '    //res.setHeader("Cache-Control", "public, max-age=86400");' : '';
   const validate = key_names.length ? `
-  validate_query({
+  validate({
   ${key_names.map(key => `    ${key}: z.string().min(1, '${key} is required'),`).join('\n')}
-  }),` : ``;
+  }, 'params'),` : ``;
   return `
 app.${method}('${path}', ${authentication}${validate}
   async (req, res) => {
-
 ${inputs.length ? `    const {${inputs}} = req.query;
     const result = await ${name}['${method} ${path}'](${inputs});` :
       `    const result = await ${name}['${method} ${path}']();`}
@@ -40,9 +38,9 @@ const create_post_put = (name, method, path, field_names, authentication) => {
   const inputs = field_names.join(', ');
   return `
 app.${method}('${path}', ${authentication}
-  validate_body({
+  validate({
 ${field_names.map(key => `    ${key}: z.string().min(1, '${key} is required'),`).join('\n')}
-  }),
+  }, 'body'),
   async (req, res) => {
     const {${inputs}} = req.query;
     const result = await ${name}['${method} ${path}'](${inputs});
@@ -75,7 +73,7 @@ import express from 'express';
 import {z} from 'zod';
 import ${name} from '../models/${name}.js';
 import auth from '../auth.js';
-import { validate_body, validate_query } from '../validate.js';
+import validate from '../validate.js';
 const app = express.Router();
 ${apis}
 export default app;
@@ -98,7 +96,7 @@ module.exports = (cwd, config) => {
   });
 
   fs.copyFileSync(`${__dirname}/esm-auth.js`, `${cwd}/auth.js`);
-  fs.copyFileSync(`${__dirname}/esm-val.js`, `${cwd}/validate.js`);
+  fs.copyFileSync(`${__dirname}/esm-validate.js`, `${cwd}/validate.js`);
   fs.writeFileSync(`${cwd}/server.js`, createExpressServer(config));
   fs.writeFileSync(`${cwd}/test.http`, createTest(config));
   fs.writeFileSync(`${cwd}/README.md`, createReadme(config));
