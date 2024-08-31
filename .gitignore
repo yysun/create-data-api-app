@@ -4,3 +4,4 @@ demo/app
 demo/db
 log.*
 test
+coverage

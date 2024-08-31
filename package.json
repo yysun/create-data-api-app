@@ -7,6 +7,7 @@
     "create-data-api-app": "cli.js"
   },
   "scripts": {
+    "test": "jest",
     "start": "cd demo && nodemon server",
     "dev": "nodemon --ignore demo/ cli.js -- demo"
   },
@@ -26,6 +27,7 @@
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "nodemon": "^3.1.4"
   }
 }
