@@ -17,12 +17,16 @@ const create_get_delete = (name, method, path, params, authentication, validatio
   const inputs = params.map(p => p.name).join(', ');
   const setCache = method === 'get' ? '    //res.setHeader("Cache-Control", "public, max-age=86400");' : '';
   return `app.${method}('${path}', ${authentication}${validation}
-  async (req, res) => {
+  async (req, res, next) => {
+    try {
 ${inputs.length ? `    const {${inputs}} = req.params;
     const result = await ${name}['${method} ${path}'](${inputs});` : `
     const result = await ${name}['${method} ${path}']();`}
 ${setCache}
     res.json(result);
+    } catch (e) {
+      next(e);
+    }
   }
 );
 
@@ -38,10 +42,14 @@ ${fields.map(p => `    "${p.name}": { type: "${p.type}", required: true}`).join(
   }),`;
 
   return `app.${method}('${path}', ${authentication}${validation}
-  async (req, res) => {
+  async (req, res, next) => {
     const {${inputs}} = req.body;
-    const result = await ${name}['${method} ${path}'](${inputs});
-    res.json(result);
+    try {
+      const result = await ${name}['${method} ${path}'](${inputs});
+      res.json(result);
+    } catch (e) {
+      next(e);
+    }
   }
 );
 
