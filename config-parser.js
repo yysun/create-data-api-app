@@ -10,10 +10,14 @@ module.exports = file => {
     const example_file = path.join(__dirname, 'config.yaml');
     fs.copyFileSync(example_file, file);
   }
+  const config = fs.readFileSync(file, 'utf8');
+  return parse(config);
+}
 
-  const configFile = fs.readFileSync(file, 'utf8');
-  const config = yaml.load(configFile);
+function parse(text) {
+  const config = yaml.load(text);
 
+  //parse body fields
   const parse_fields = fields => !Array.isArray(fields) ? [] :
     fields.map(field => {
       let [type, name, keys, comment] = field.split(' ');
@@ -25,14 +29,18 @@ module.exports = file => {
       return { type, name, keys, comment };
     });
 
+  const parse_url = url => {
+    const params = url.split('/').filter(p => p.startsWith(':')).map(p => p.replace(':', ''));
+    const query = url.split('?')[1];
+    const queries = query ? url.split('?')[1].split('&').map(q => q.split('=')[0]) : [];
+    return [params, queries];
+  }
 
   const { models } = config;
   models.forEach(model => {
     model.paths = [];
     model.objects.forEach(obj => {
-
       const obj_keys = Object.keys(obj);
-
       let name, type;
       if (obj_keys[0] === 'table' || obj_keys[0] === 'view') {
         name = obj.table;
@@ -47,20 +55,26 @@ module.exports = file => {
 
       obj_keys.forEach(key => {
         if (key === 'table' || key === 'query' || key === 'procedure' || key === 'select' || key === 'view') return;
+        // only handle get, post, put, delete, patch
         const authentication = key.includes('*');
         let [method, path] = key.replace(/\*/g, '').split(' ');
         const fields = parse_fields(obj[key]);
         obj[key] = fields;
-
         path = path || `/${name}`;
         method = method.toLowerCase();
-        path = `${config.path}${path}`
+        path = `${config.path}${path}`;
+        let [params, queries] = parse_url(path);
+        params = params.map(p => fields.find(f => f.name === p) || { name: p, type: 'string' });
+        queries = queries.map(q => fields.find(f => f.name === q) || { name: q, type: 'string' });
+        if(path.includes('?')) path = path.split('?')[0];
         const api = {
           name,
           type,
           func: `${name} ${key}`,
           path,
           method,
+          params,
+          queries,
           fields,
           authentication,
           keys: fields.filter(f => f.keys),
@@ -75,3 +89,5 @@ module.exports = file => {
   config.databases = models;
   return config;
 }
+
+module.exports.parse = parse;
