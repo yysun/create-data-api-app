@@ -33,18 +33,18 @@ models:
           - varchar image
 
         # get profile
-        get /api/profiles/:username:
+        get /profiles/:username:
           - varchar username PK
           - varchar bio
           - varchar image
           - boolean following
 
         # follow user
-        post* /api/profiles/:username/follow:
+        post* /profiles/:username/follow:
           - varchar username PK
 
         # unfollow user
-        delete* /api/profiles/:username/unfollow:
+        delete* /profiles/:username/unfollow:
           - varchar username PK
 
   - name: articles
@@ -79,8 +79,7 @@ models:
           - varchar tagList
 
         # delete article
-        delete*:
-          - varchar slug PK
+        delete* /articles/:slug:
 
       - table: comments
 

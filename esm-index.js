@@ -6,7 +6,6 @@ const createReadme = require('./create-readme');
 const createTest = require('./create-http-test');
 const createExpressServer = require('./esm-create-server');
 const { create_spec, create_method_spec } = require('./esm-create-spec');
-// const create_spec = require('./create-openapi-spec');
 const create_db = require('./esm-create-db');
 const create_model = require('./esm-create-model');
 
@@ -14,18 +13,14 @@ const ensure = dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 };
 
-const create_get_delete = (name, method, path, key_names, authentication) => {
-  const inputs = key_names.join(', ');
+const create_get_delete = (name, method, path, params, authentication, validation ) => {
+  const inputs = params.map(p => p.name).join(', ');
   const setCache = method === 'get' ? '    //res.setHeader("Cache-Control", "public, max-age=86400");' : '';
-  const validate = key_names.length ? `
-  validate({
-  ${key_names.map(key => `    ${key}: z.string().min(1, '${key} is required'),`).join('\n')}
-  }, 'params'),` : ``;
-  return `app.${method}('${path}', ${authentication}${validate}
+  return `app.${method}('${path}', ${authentication}${validation}
   async (req, res) => {
-${inputs.length ? `    const {${inputs}} = req.query;
-    const result = await ${name}['${method} ${path}'](${inputs});` :
-      `    const result = await ${name}['${method} ${path}']();`}
+${inputs.length ? `    const {${inputs}} = req.params;
+    const result = await ${name}['${method} ${path}'](${inputs});` : `
+    const result = await ${name}['${method} ${path}']();`}
 ${setCache}
     res.json(result);
   }
@@ -34,14 +29,17 @@ ${setCache}
 `;
 }
 
-const create_post_put = (name, method, path, field_names, authentication) => {
-  const inputs = field_names.join(', ');
-  return `app.${method}('${path}', ${authentication}
-  validate({
-${field_names.map(key => `    ${key}: z.string().min(1, '${key} is required'),`).join('\n')}
-  }, 'body'),
+const create_post_put = (name, method, path, fields, authentication, validation) => {
+  const inputs = fields.map(f => f.name).join(', ');
+
+  if (fields.length) validation += `
+  validate('body', {
+${fields.map(p => `    "${p.name}": { type: "${p.type}", required: true}`).join(',\n')}
+  }),`;
+
+  return `app.${method}('${path}', ${authentication}${validation}
   async (req, res) => {
-    const {${inputs}} = req.query;
+    const {${inputs}} = req.body;
     const result = await ${name}['${method} ${path}'](${inputs});
     res.json(result);
   }
@@ -52,15 +50,27 @@ ${field_names.map(key => `    ${key}: z.string().min(1, '${key} is required'),`)
 
 
 const create_api = (name, paths) => paths.map((pathDef) => {
-  let { method, path, key_names, field_names, authentication } = pathDef;
+  let { method, path, fields, authentication, params, queries } = pathDef;
   authentication = authentication ? 'auth, ' : '';
   let method_spec = create_method_spec(pathDef);
   method_spec = method_spec.split('\n')
-    .slice(0, -1)
-    .map(line => `* ${line}`).join('\n');
+    .filter(l => l.trim().length)
+    .map(line => `*${line.substring(2)}`).join('\n');
+
+  let validation = '';
+  if (params.length) validation += `
+  validate('params',{
+${params.map(p => `    "${p.name}": { type: "${p.type}", required: true}`).join(',\n')}
+  }),`;
+
+  if (queries.length) validation += `
+  validate('query',{
+${queries.map(p => `    "${p.name}": { type: "${p.type}", required: true}`).join(',\n')}
+  }),`;
+
   const method_func = (method === 'get' || method === 'delete') ?
-    create_get_delete(name, method, path, key_names, authentication) :
-    create_post_put(name, method, path, field_names, authentication);
+    create_get_delete(name, method, path, params, authentication, validation) :
+    create_post_put(name, method, path, fields, authentication, validation);
   return `/**
 * @swagger
 * ${path}
@@ -80,7 +90,6 @@ const create_routes = (model, config) => {
 
   const content = `//@ts-check
 import express from 'express';
-import {z} from 'zod';
 import ${name} from '../models/${name}.js';
 import auth from '../auth.js';
 import validate from '../validate.js';
@@ -114,19 +123,19 @@ module.exports = (cwd, config) => {
   fs.writeFileSync(`${cwd}/api-spec.yaml`, create_spec(config));
   const db = create_db(cwd, config) || '';
 
-  // if (!fs.existsSync(`${cwd}/package.json`)) {
-  //   execSync(`npm init -y`, { cwd });
-  //   const json = require(`${cwd}/package.json`);
-  //   json.type = 'module';
-  //   if (!json.scripts) json.scripts = {};
-  //   json.scripts.start = 'node server.js';
-  //   json.scripts["build:client"] = "apprun-site build";
-  //   json.scripts["build:server"] = "create-data-api-app";
-  //   json.scripts["build:zip"] = "zip -r archive.zip public/ api/ server.js package*.json";
-  //   fs.writeFileSync(`${cwd}/package.json`, JSON.stringify(json, null, 2));
-  // }
+  if (!fs.existsSync(`${cwd}/package.json`)) {
+    execSync(`npm init -y`, { cwd });
+    const json = require(`${cwd}/package.json`);
+    json.type = 'module';
+    if (!json.scripts) json.scripts = {};
+    json.scripts.start = 'node server.js';
+    json.scripts["build:client"] = "apprun-site build";
+    json.scripts["build:server"] = "create-data-api-app";
+    json.scripts["build:zip"] = "zip -r archive.zip public/ api/ server.js package*.json";
+    fs.writeFileSync(`${cwd}/package.json`, JSON.stringify(json, null, 2));
+  }
 
-  // execSync(`npm install apprun apprun-site dotenv jsonwebtoken zod`, { cwd });
-  // if (db === 'mssql') execSync(`npm install mssql`, { cwd });
-  // if (db === 'mysql' || db === 'mysql2') execSync(`npm install mysql2 sql-template-strings`, { cwd });
+  execSync(`npm install apprun apprun-site dotenv jsonwebtoken zod`, { cwd });
+  if (db === 'mssql') execSync(`npm install mssql`, { cwd });
+  if (db === 'mysql' || db === 'mysql2') execSync(`npm install mysql2 sql-template-strings`, { cwd });
 }

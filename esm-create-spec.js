@@ -31,20 +31,31 @@ const parameters = fields => fields.map(
             type: ${map_type(type)}
     `).join('');
 
-const create_method = ({ method, name, func, fields, keys, authentication }) =>
+const create_method = ({ method, name, func, fields, params, queries, authentication }) =>
   method === 'get' || method === 'delete' ? `    ${method}:
       tags:
         - ${name}
       summary: ${func}
-      ${keys.length ? `parameters:${parameters(keys)}` : ''}
+      ${authentication ? `security: []` : ''}
+      ${params.length ? `parameters:${parameters(params)}` : ''}
+      ${queries.length ? `parameters:${parameters(queries)}` : ''}
       responses:
         '200':
           description: OK
+          ${method==='get' ? `content:
+            application/json:
+            schema:
+              type: object
+              properties:${fields.map(({ name, type }) => `
+                ${name}:
+                  type: ${map_type(type)}`).join('')}` : ''}
+
 ` : `    ${method}:
       tags:
         - ${name}
       summary: ${func}
-      ${authentication ? `${security}` : ''}
+      security: ${authentication ? `[]` : ''}
+      ${params.length ? `parameters:${parameters(params)}` : ''}
       requestBody:
         required: true
         content:

@@ -74,6 +74,7 @@ ${key_names.map(f => `      ${f} = \${${f}}`).join(' AND\n')}\`;
 
 function createStoredProcedure({ name, fields }) {
   return `
+  // procedure: ${name}
   "${name}": async (${fields.map(f => `${f.name}`).join(', ')}) => {
     ${fields.length === 0 ? `
     const result = await sql.query\`${name}\`` : `
@@ -101,13 +102,14 @@ const create_sql = (path) => {
 
 
 const create_method = pathDef => {
-  const { path, method } = pathDef;
-  let inputs = pathDef.field_names.join(', ');
+  const { type, name, path, method } = pathDef;
+  let inputs = pathDef.fields.map(f => f.name).join(', ');
   if (method === 'get' || method === 'delete') {
-    inputs = pathDef.key_names.join(', ');
+    inputs = pathDef.params.map(p => p.name).join(', ');
   }
   const key = `${method} ${path}`;
-  return `"${key}": async (${inputs}) => {
+  return `  // ${type}: ${name}
+  "${key}": async (${inputs}) => {
     ${create_sql(pathDef)}
   },
   `
