@@ -41,9 +41,9 @@ function parse(text) {
   const { models } = config;
   models.forEach(model => {
     const model_paths = [];
-    for (const [name, objects] of Object.entries(model)) {
-      if (ignoreChars.includes(name[0])) continue;
-      // for all objects of model
+    // each model has one key as model name and value as objects
+    let [name, objects] = Object.entries(model)[0];
+    if (!ignoreChars.includes(name[0])) {
       for (const obj of objects) {
         // each object has one key as object name and value as paths
         let [obj_name, paths] = Object.entries(obj)[0];
@@ -81,6 +81,7 @@ function parse(text) {
       }
     }
     model.paths = model_paths;
+    model.name = Object.keys(model)[0];
   });
   config.databases = config.models;
   return config;
