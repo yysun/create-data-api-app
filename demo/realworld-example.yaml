@@ -2,7 +2,7 @@ name: RealWorld app
 port: 8080
 path: /api
 authentication: jwtAuth
-database: mysql2
+database: mysql
 models:
   - name: users
     objects:
@@ -19,32 +19,32 @@ models:
           - varchar password
 
         # get current user
-        get* /user:
+        get* /users/:username:
           - varchar username PK
           - varchar email
           - varchar bio
           - varchar image
 
         # update user
-        put* /user:
+        put* /users/:username:
           - varchar username PK
           - varchar email
           - varchar bio
           - varchar image
 
         # get profile
-        get /profiles/:username:
+        get /users/profile/:username:
           - varchar username PK
           - varchar bio
           - varchar image
           - boolean following
 
         # follow user
-        post* /profiles/:username/follow:
+        post* /users/profile/:username/follow:
           - varchar username PK
 
         # unfollow user
-        delete* /profiles/:username/unfollow:
+        delete* /users/profile/:username/unfollow:
           - varchar username PK
 
   - name: articles
@@ -55,7 +55,7 @@ models:
 
       # feed articles
       - procedure: usp_articles_feed
-        get* /articles/feed:
+        get* /articles/feed/:username:
           - varchar username PK
 
       - table: articles
@@ -96,9 +96,9 @@ models:
           - object author
 
         # delete comment
-        delete /articles/:slug/comments/:id:
+        delete* /articles/:slug/comments/:id:
           - varchar slug PK
-          - varchar id PK
+          - int id PK
 
 
       - table: favorite
