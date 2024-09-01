@@ -24,7 +24,8 @@
   "homepage": "https://github.com/yysun/create-data-api-app#readme",
   "dependencies": {
     "commander": "^12.1.0",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "jest": "^29.7.0",

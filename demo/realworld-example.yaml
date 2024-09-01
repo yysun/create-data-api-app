@@ -4,9 +4,8 @@ path: /api
 authentication: jwtAuth
 database: mysql
 models:
-  - name: users
-    objects:
-      - table: users
+  - users:
+    - table users:
         # authentication
         post /users/login:
           - varchar username
@@ -47,18 +46,17 @@ models:
         delete* /users/profile/:username/unfollow:
           - varchar username PK
 
-  - name: articles
-    objects:
+  - articles:
       # list articles
-      - procedure: usp_articles
+    - procedure usp_articles:
         get /articles:
 
       # feed articles
-      - procedure: usp_articles_feed
+    - procedure usp_articles_feed:
         get* /articles/feed/:username:
           - varchar username PK
 
-      - table: articles
+    - table articles:
         # get article
         get /articles/:slug:
           - varchar slug PK
@@ -81,7 +79,7 @@ models:
         # delete article
         delete* /articles/:slug:
 
-      - table: comments
+    - table comments:
 
         # add comment
         post* /articles/:slug/comments:
@@ -101,7 +99,7 @@ models:
           - int id PK
 
 
-      - table: favorite
+    - table favorite:
 
         # like an article
         post* /articles/:slug/favorite:
@@ -113,8 +111,7 @@ models:
           - varchar username PK
           - varchar slug PK
 
-  - name: tags
-    objects:
-      - table: tags
+  - tags:
+    - table tags:
         # get tags
         get:

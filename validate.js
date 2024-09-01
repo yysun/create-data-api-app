@@ -1,12 +1,10 @@
-import { z } from 'zod';
+const { z } = require('zod');
 
 const typeMapping = {
   int: z.number().int(),
   number: z.number(),
   Boolean: z.boolean(),
   string: z.string(),
-  email: z.string(),
-  password: z.string(),
   varchar: z.string(),
   date: z.date(),
   datetime: z.date(),
@@ -45,7 +43,8 @@ const zodMethods = [
   'catch',     // For setting a fallback value in case of validation failure
   'superRefine'// For adding advanced custom validation with context
 ];
-export function toZod(jsonSchema) {
+
+module.exports = function toZod(jsonSchema) {
   const zodSchema = {};
   for (const [key, rules] of Object.entries(jsonSchema)) {
     const { type, message } = rules;
@@ -53,8 +52,7 @@ export function toZod(jsonSchema) {
     if (!zodType) {
       throw new Error(`Unsupported type: ${rules.type}`);
     }
-    if ((!rules.hasOwnProperty('optional') || rules.optional === false) &&
-      (type === 'string' || type === 'varchar')) {
+    if ((!rules.hasOwnProperty('optional') || rules.optional === false) && type === 'string') {
       zodType = zodType.min(1, { message });
     }
     for (const [propKey, propValue] of Object.entries(rules)) {
@@ -68,13 +66,4 @@ export function toZod(jsonSchema) {
     zodSchema[key] = zodType;
   }
   return z.object(zodSchema);
-}
-
-export default (target, schema) => (req, res, next) => {
-  const parsed = toZod(schema).safeParse(req[target]);
-  if (!parsed.success) {
-    return res.status(400).json({ errors: parsed.error.errors });
-  }
-  req[target] = parsed.data;
-  next();
 }

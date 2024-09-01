@@ -16,6 +16,7 @@ const ensure = dir => {
 const create_get_delete = (name, method, path, params, authentication, validation ) => {
   const inputs = params.map(p => p.name).join(', ');
   const setCache = method === 'get' ? '    //res.setHeader("Cache-Control", "public, max-age=86400");' : '';
+  if (validation) validation = '\n' + validation + '\n';
   return `app.${method}('${path}', ${authentication}${validation}
   async (req, res, next) => {
     try {
@@ -33,18 +34,26 @@ ${setCache}
 `;
 }
 
-
 const create_validation = (type, fields) => {
+  const create_field_validation = (field) => {
+    let { name, type, validation } = field;
+    let json = validation ? JSON.parse(validation) : {};
+    if(type === 'varchar') type = 'string';
+    json = { type, ...json };
+    return `    "${name}": ${JSON.stringify(json)}`;
+  }
   return `
-validate('${type}',{
-${fields.map(p => `    "${p.name}": { type: "${p.type}", required: true}`).join(',\n')}
-}),`;
+  validate('${type}',{
+${fields.map(f => create_field_validation(f)).join(',\n')}
+  }),`;
 };
 
 const create_post_put = (name, method, path, fields, authentication, validation) => {
   const inputs = fields.map(f => f.name).join(', ');
   if (fields.length) validation += create_validation('body', fields);
-  return `app.${method}('${path}', ${authentication}${validation}
+  return `app.${method}('${path}', ${authentication}
+  ${validation}
+
   async (req, res, next) => {
     const {${inputs}} = req.body;
     try {
