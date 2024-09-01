@@ -19,7 +19,7 @@ program
     info && console.log(JSON.stringify(configueation, null, 2));
 
     if(!no_esm) {
-      return require('./esm-index')(cwd, configueation);
+      return require('./esm-index').default(cwd, configueation);
     } else {
       return require('./index')(cwd, configueation);
     }

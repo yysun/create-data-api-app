@@ -33,14 +33,17 @@ ${setCache}
 `;
 }
 
+
+const create_validation = (type, fields) => {
+  return `
+validate('${type}',{
+${fields.map(p => `    "${p.name}": { type: "${p.type}", required: true}`).join(',\n')}
+}),`;
+};
+
 const create_post_put = (name, method, path, fields, authentication, validation) => {
   const inputs = fields.map(f => f.name).join(', ');
-
-  if (fields.length) validation += `
-  validate('body', {
-${fields.map(p => `    "${p.name}": { type: "${p.type}", required: true}`).join(',\n')}
-  }),`;
-
+  if (fields.length) validation += create_validation('body', fields);
   return `app.${method}('${path}', ${authentication}${validation}
   async (req, res, next) => {
     const {${inputs}} = req.body;
@@ -66,15 +69,8 @@ const create_api = (name, paths) => paths.map((pathDef) => {
     .map(line => `*${line.substring(2)}`).join('\n');
 
   let validation = '';
-  if (params.length) validation += `
-  validate('params',{
-${params.map(p => `    "${p.name}": { type: "${p.type}", required: true}`).join(',\n')}
-  }),`;
-
-  if (queries.length) validation += `
-  validate('query',{
-${queries.map(p => `    "${p.name}": { type: "${p.type}", required: true}`).join(',\n')}
-  }),`;
+  if (params.length) validation += create_validation('params', params);
+  if (queries.length) validation += create_validation('query', queries);
 
   const method_func = (method === 'get' || method === 'delete') ?
     create_get_delete(name, method, path, params, authentication, validation) :
@@ -109,41 +105,46 @@ export default app;
   fs.writeFileSync(api_file, content);
 };
 
-module.exports = (cwd, config) => {
+module.exports = {
 
-  config.api_path = path.resolve(cwd, 'api');
-  config.model_path = path.resolve(cwd, 'models');
+  create_validation,
 
-  ensure(cwd);
-  ensure(config.api_path);
-  ensure(config.model_path);
+  default: (cwd, config) => {
 
-  config.models.forEach(model => {
-    create_routes(model, config);
-    create_model(model, config);
-  });
+    config.api_path = path.resolve(cwd, 'api');
+    config.model_path = path.resolve(cwd, 'models');
 
-  fs.copyFileSync(`${__dirname}/esm-auth.js`, `${cwd}/auth.js`);
-  fs.copyFileSync(`${__dirname}/esm-validate.js`, `${cwd}/validate.js`);
-  fs.writeFileSync(`${cwd}/server.js`, createExpressServer(config));
-  fs.writeFileSync(`${cwd}/test.http`, createTest(config));
-  fs.writeFileSync(`${cwd}/README.md`, createReadme(config));
-  fs.writeFileSync(`${cwd}/api-spec.yaml`, create_spec(config));
-  const db = create_db(cwd, config) || '';
+    ensure(cwd);
+    ensure(config.api_path);
+    ensure(config.model_path);
 
-  if (!fs.existsSync(`${cwd}/package.json`)) {
-    execSync(`npm init -y`, { cwd });
-    const json = require(`${cwd}/package.json`);
-    json.type = 'module';
-    if (!json.scripts) json.scripts = {};
-    json.scripts.start = 'node server.js';
-    json.scripts["build:client"] = "apprun-site build";
-    json.scripts["build:server"] = "create-data-api-app";
-    json.scripts["build:zip"] = "zip -r archive.zip public/ api/ server.js package*.json";
-    fs.writeFileSync(`${cwd}/package.json`, JSON.stringify(json, null, 2));
+    config.models.forEach(model => {
+      create_routes(model, config);
+      create_model(model, config);
+    });
+
+    fs.copyFileSync(`${__dirname}/esm-auth.js`, `${cwd}/auth.js`);
+    fs.copyFileSync(`${__dirname}/esm-validate.js`, `${cwd}/validate.js`);
+    fs.writeFileSync(`${cwd}/server.js`, createExpressServer(config));
+    fs.writeFileSync(`${cwd}/test.http`, createTest(config));
+    fs.writeFileSync(`${cwd}/README.md`, createReadme(config));
+    fs.writeFileSync(`${cwd}/api-spec.yaml`, create_spec(config));
+    const db = create_db(cwd, config) || '';
+
+    // if (!fs.existsSync(`${cwd}/package.json`)) {
+    //   execSync(`npm init -y`, { cwd });
+    //   const json = require(`${cwd}/package.json`);
+    //   json.type = 'module';
+    //   if (!json.scripts) json.scripts = {};
+    //   json.scripts.start = 'node server.js';
+    //   json.scripts["build:client"] = "apprun-site build";
+    //   json.scripts["build:server"] = "create-data-api-app";
+    //   json.scripts["build:zip"] = "zip -r archive.zip public/ api/ server.js package*.json";
+    //   fs.writeFileSync(`${cwd}/package.json`, JSON.stringify(json, null, 2));
+    // }
+
+    // execSync(`npm install apprun apprun-site dotenv jsonwebtoken zod`, { cwd });
+    // if (db === 'mssql') execSync(`npm install mssql`, { cwd });
+    // if (db === 'mysql' || db === 'mysql2') execSync(`npm install mysql2 sql-template-strings`, { cwd });
   }
-
-  execSync(`npm install apprun apprun-site dotenv jsonwebtoken zod`, { cwd });
-  if (db === 'mssql') execSync(`npm install mssql`, { cwd });
-  if (db === 'mysql' || db === 'mysql2') execSync(`npm install mysql2 sql-template-strings`, { cwd });
 }
