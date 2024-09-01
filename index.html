@@ -16,9 +16,8 @@
 <span class="hljs-attr">path:</span> <span class="hljs-string">/api</span>
 <span class="hljs-attr">database:</span> <span class="hljs-string">mysql</span>
 <span class="hljs-attr">models:</span>
-  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">users</span>
-    <span class="hljs-attr">objects:</span>
-      <span class="hljs-bullet">-</span> <span class="hljs-attr">table:</span> <span class="hljs-string">users</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">users:</span>
+    <span class="hljs-bullet">-</span> <span class="hljs-attr">table users:</span>
         <span class="hljs-attr">get:</span>
           <span class="hljs-bullet">-</span> <span class="hljs-string">int</span> <span class="hljs-string">id</span>
           <span class="hljs-bullet">-</span> <span class="hljs-string">varchar</span> <span class="hljs-string">name</span>
@@ -35,9 +34,7 @@
 <h3 id="you-will-code-sql-for-database">You will code SQL for database.</h3>
 <blockquote></blockquote>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-javascript"><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span>.<span class="hljs-property">mydb</span> = {
-
-  <span class="hljs-string">&quot;users:get&quot;</span>: <span class="hljs-keyword">async</span> () =&gt; {
-
+  <span class="hljs-string">&quot;get users&quot;</span>: <span class="hljs-keyword">async</span> () =&gt; {
     <span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> sql.<span class="hljs-property">query</span><span class="hljs-string">`SELECT
       id,
       name,
@@ -72,18 +69,16 @@ app.<span class="hljs-title function_">listen</span>(port, <span class="hljs-fun
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="5" data-class="invert" data-paginate="true" data-footer="press [space] to continue" data-theme="uncover" lang="en-CA" class="invert" data-marpit-pagination="5" style="--class:invert;--paginate:true;--footer:press [space] to continue;--theme:uncover;" data-marpit-pagination-total="9">
 <h3 id="then-if-there-are-many-of-such-to-code">Then, if there are many of such to code</h3>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-yaml"><span class="hljs-attr">models:</span>
-  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">users</span>
-    <span class="hljs-attr">objects:</span>
-      <span class="hljs-bullet">-</span> <span class="hljs-attr">table:</span> <span class="hljs-string">users</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">users:</span>
+    <span class="hljs-bullet">-</span> <span class="hljs-attr">table users:</span>
         <span class="hljs-attr">get:</span>
-        <span class="hljs-attr">get id:</span>
+        <span class="hljs-attr">get /users/:id:</span>
         <span class="hljs-attr">post:</span>
-        <span class="hljs-attr">put:</span>
-        <span class="hljs-attr">delete:</span>
-        <span class="hljs-attr">patch name:</span>
-        <span class="hljs-attr">patch email:</span>
-      <span class="hljs-bullet">-</span> <span class="hljs-attr">procedure:</span> <span class="hljs-string">usp_update_user</span>
-      <span class="hljs-bullet">-</span> <span class="hljs-attr">query:</span> <span class="hljs-string">users_posts</span>
+        <span class="hljs-attr">put /users/:id:</span>
+        <span class="hljs-attr">patch /users/:id/name:</span>
+        <span class="hljs-attr">patch /users/:id/email:</span>
+        <span class="hljs-attr">delete /users/:id:</span>
+    <span class="hljs-bullet">-</span> <span class="hljs-attr">procedure:</span> <span class="hljs-string">usp_update_user</span>
 </code></pre>
 <footer>press [space] to continue</footer>
 </section>

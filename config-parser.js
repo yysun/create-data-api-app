@@ -17,17 +17,17 @@ module.exports = file => {
 function parse(text) {
   const config = yaml.load(text);
 
-  //parse body fields
-  const parse_fields = fields => !Array.isArray(fields) ? [] :
-    fields.map(field => {
-      let [type, name, keys, comment] = field.split(' ');
-      if (keys && keys.startsWith('"')) {
-        comment = keys;
-        keys = undefined;
-      }
-      if (comment) comment = comment.replace(/"/g, '');
-      return { type, name, keys, comment };
-    });
+  const parse_field = fieldStr => {
+    console.assert(typeof fieldStr === 'string', 'field must be a string:' + JSON.stringify(fieldStr));
+    const [field, validation] = fieldStr.split(';');
+    let [type, name, keys, comment] = field.split(' ');
+    if (keys && keys.startsWith('"')) {
+      comment = keys;
+      keys = undefined;
+    }
+    if (comment) comment = comment.replace(/"/g, '');
+    return { type, name, keys, comment, validation };
+  }
 
   const parse_url = url => {
     const params = url.split('/').filter(p => p.startsWith(':')).map(p => p.replace(':', ''));
@@ -36,57 +36,48 @@ function parse(text) {
     return [params, queries];
   }
 
+
   const { models } = config;
   models.forEach(model => {
-    model.paths = [];
-    model.objects.forEach(obj => {
-      const obj_keys = Object.keys(obj);
-      let name, type;
-      if (obj_keys[0] === 'table' || obj_keys[0] === 'view') {
-        name = obj.table;
-        type = 'table';
-      } else if (obj_keys[0] === 'query') {
-        name = obj.query;
-        type = 'query';
-      } else if (obj_keys[0] === 'procedure') {
-        name = obj.procedure;
-        type = 'procedure';
-      } else return;
+    const model_paths = [];
+    for (const objects of Object.values(model)) {
+      // for all objects of model
+      for (const obj of objects) {
+        // each object has one key as object name and value as paths
+        let [obj_name, paths ] = Object.entries(obj)[0];
+        let [type, name] = obj_name.split(' ');
+        for (let [key, fields] of Object.entries(paths)) {
+          const authentication = key.includes('*');
+          let [method, path] = key.replace(/\*/g, '').split(' ');
 
-      obj_keys.forEach(key => {
-        if (key === 'table' || key === 'query' || key === 'procedure' || key === 'select' || key === 'view') return;
-        // only handle get, post, put, delete, patch
-        const authentication = key.includes('*');
-        let [method, path] = key.replace(/\*/g, '').split(' ');
-        const fields = parse_fields(obj[key]);
-        obj[key] = fields;
-        path = path || `/${name}`;
-        method = method.toLowerCase();
-        path = `${config.path}${path}`;
-        let [params, queries] = parse_url(path);
-        params = params.map(p => fields.find(f => f.name === p) || { name: p, type: 'string' });
-        queries = queries.map(q => fields.find(f => f.name === q) || { name: q, type: 'string' });
-        if(path.includes('?')) path = path.split('?')[0];
-        const api = {
-          name,
-          type,
-          func: `${name} ${key}`,
-          path,
-          method,
-          params,
-          queries,
-          fields,
-          authentication,
-          keys: fields.filter(f => f.keys),
-          key_names: fields.filter(f => f.keys).map(f => `${f.name}`),
-          field_names: fields.map(f => `${f.name}`)
-        };
-        model.paths.push(api);
-      });
-    });
-
+          fields = fields ? fields.map(field => parse_field(field)) :[];
+          path = path || `/${name}`;
+          method = method.toLowerCase();
+          path = `${config.path}${path}`;
+          let [params, queries] = parse_url(path);
+          params = params.map(p => fields.find(f => f.name === p) || { name: p, type: 'string' });
+          queries = queries.map(q => fields.find(f => f.name === q) || { name: q, type: 'string' });
+          if (path.includes('?')) path = path.split('?')[0];
+          const api = {
+            name,
+            type,
+            path,
+            method,
+            params,
+            queries,
+            fields,
+            authentication,
+            keys: fields.filter(f => f.keys),
+            key_names: fields.filter(f => f.keys).map(f => `${f.name}`),
+            field_names: fields.map(f => `${f.name}`)
+          };
+          model_paths.push(api);
+        }
+      }
+    }
+    model.paths = model_paths;
   });
-  config.databases = models;
+  config.databases = config.models;
   return config;
 }
 

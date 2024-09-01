@@ -17,9 +17,8 @@ port: 8080
 path: /api
 database: mysql
 models:
-  - name: users
-    objects:
-      - table: users
+  - users:
+    - table users:
         get:
           - int id
           - varchar name
@@ -44,9 +43,7 @@ Can you write a database API app in a few minutes?
 
 ```javascript
 module.exports.mydb = {
-
-  "users:get": async () => {
-
+  "get users": async () => {
     const result = await sql.query`SELECT
       id,
       name,
@@ -86,18 +83,16 @@ app.listen(port, () => {
 
 ```yaml
 models:
-  - name: users
-    objects:
-      - table: users
+  - users:
+    - table users:
         get:
-        get id:
+        get /users/:id:
         post:
-        put:
-        delete:
-        patch name:
-        patch email:
-      - procedure: usp_update_user
-      - query: users_posts
+        put /users/:id:
+        patch /users/:id/name:
+        patch /users/:id/email:
+        delete /users/:id:
+    - procedure: usp_update_user
 ```
 
 ---

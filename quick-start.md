@@ -31,16 +31,15 @@ database: mysql
 
 ---
 
-### Step 2: add database objects
+### Step 2: add models and objects
 
 ```yaml
 name: My API app
 port: 8080
 path: /api
 models:
-  - name: mydb
-    objects:
-      - table: users
+  - users:
+    - table users:
 ```
 
 ---
@@ -52,14 +51,13 @@ name: My API app
 port: 8080
 path: /api
 models:
-  - name: mydb
-    objects:
-      - table: users
+  - users:
+    - table users:
         get:
           - int id
           - varchar name
           - varchar email
-        get /users:id:
+        get /users/:id:
           - int id PK
           - varchar name
           - varchar email
@@ -81,5 +79,5 @@ node server.js
 
 That's it!
 
-Download [config.yaml](quick-start-config.yaml).
+Download [config.yaml](config.yaml).
 

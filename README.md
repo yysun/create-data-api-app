@@ -24,9 +24,8 @@ port: 8080
 path: /api
 database: mysql
 models:
-  - name: users
-    objects:
-      - table: users
+  - users:
+    - table users:
         get:
           - int id
           - varchar name
@@ -77,41 +76,41 @@ Table can use the following methods:
 Each method has corresponding fields that you will need to provide.
 
 ```yaml
-  - table: users
-    get:
-      - int id
-      - varchar name
-      - varchar email
-    post:
-      - varchar name
-      - varchar email
+  - table users:
+      get:
+        - int id
+        - varchar name
+        - varchar email
+      post:
+        - varchar name
+        - varchar email
 
 ```
 
 In real world, there could be multiple ways of creating records, retrieving records and updating records. Therefore, you can define multiple paths with different combinations of fields as you need.
 
 ```yaml
-  - table: users
-    get:
-      - int id
-      - varchar name
-      - varchar email
-    get /users/:id:
-      - int id PK
-      - varchar name
-      - varchar email
-    post:
-      - int id PK
-      - varchar name
-      - varchar email
-    patch users/name:
-      - int id PK
-      - varchar name
-    patch users/email:
-      - int id PK
-      - varchar email
-    delete :id:
-      - int id PK
+  - table users:
+      get:
+        - int id
+        - varchar name
+        - varchar email
+      get /users/:id:
+        - int id PK
+        - varchar name
+        - varchar email
+      post:
+        - int id PK
+        - varchar name
+        - varchar email
+      patch users/name:
+        - int id PK
+        - varchar name
+      patch users/email:
+        - int id PK
+        - varchar email
+      delete :id:
+        - int id PK
 ```
 
 ### View
@@ -119,15 +118,15 @@ In real world, there could be multiple ways of creating records, retrieving reco
 Access to views are similar to tables. Only GET method is supported. You can define the fields that you want to retrieve. And the fields for search criteria.
 
 ```yaml
-  - view: v_users
-    get:
-      - int id
-      - varchar name
-      - varchar email
-    get /:id:
-      - int id
-      - varchar name PK
-      - varchar email
+  - view v_users:
+      get:
+        - int id
+        - varchar name
+        - varchar email
+      get /:id:
+        - int id
+        - varchar name PK
+        - varchar email
 ```
 
 ### Stored Procedure
@@ -135,13 +134,13 @@ Access to views are similar to tables. Only GET method is supported. You can def
 Calls to the stored procedures are straight forward. You define the parameters.
 
 ```yaml
-  - procedure: usp_update_user
-    post:
-      - int id
-      - varchar name
-      - varchar email
-      - datetime created_at
-      - datetime updated_at
+  - procedure usp_update_user:
+      post:
+        - int id
+        - varchar name
+        - varchar email
+        - datetime created_at
+        - datetime updated_at
 ```
 
 ### Custom Query
@@ -149,11 +148,11 @@ Calls to the stored procedures are straight forward. You define the parameters.
 You can also define custom query that has joins to other tables. You can not define the fields that you want to retrieve. It is defined by the query. But, you still can define the fields for search criteria. And define the field names for api. E.g. the field name in the query is _u.id_, but you want to use _id_ in the api.
 
 ```yaml
-  - query: users_posts
-    select: select * from users u join posts p on u.id = p.user_id
-    get:
-    get /posts/:userid/:
-      - int id FK "u.id"
+  - query users_posts:
+      select: select * from users u join posts p on u.id = p.user_id
+      get:
+      get /posts/:userid/:
+        - int id FK "u.id"
 ```
 
 ### Fields
@@ -169,9 +168,9 @@ When the fields are PK (primary key), FK (foreign key), or SK (search key), they
 
 ```yaml
   - query: users_posts
-    select: select * from users u join posts p on u.id = p.user_id
-    get /users_posts/:user_id:
-      - int user_id FK "u.id"
+      select: select * from users u join posts p on u.id = p.user_id
+      get /users_posts/:user_id:
+        - int user_id FK "u.id"
 ```
 
 will generate the following SQL statement:
@@ -186,18 +185,17 @@ Paths are generated as /{object name}. But you can also explictly define the pat
 
 ```yaml
   - table: users
-
     # default path is /users
-    get:
-      - int id
-      - varchar name
-      - varchar email
+      get:
+        - int id
+        - varchar name
+        - varchar email
 
-    # explicit path
-    get /users:id:
-      - int id PK
-      - varchar name
-      - varchar email
+      # explicit path
+      get /users:id:
+        - int id PK
+        - varchar name
+        - varchar email
 ```
 
 ## Authentication
@@ -216,25 +214,25 @@ Then, you can appy the authentication to the routes by adding the '*' sign.
 
 ```yaml
   - table: users
-    get:
-      - int id
-      - varchar name
-      - varchar email
-    get* /users:id:
-      - int id PK
-      - varchar name
-      - varchar email
-    post*:
-      - varchar name
-      - varchar email
-    patch* /name:
-      - int id PK
-      - varchar name
-    patch* /email:
-      - int id PK
-      - varchar email
-    delete* /:id:
-      - int id PK
+      get:
+        - int id
+        - varchar name
+        - varchar email
+      get* /users:id:
+        - int id PK
+        - varchar name
+        - varchar email
+      post*:
+        - varchar name
+        - varchar email
+      patch* /name:
+        - int id PK
+        - varchar name
+      patch* /email:
+        - int id PK
+        - varchar email
+      delete* /:id:
+        - int id PK
 ```
 
 By default, if you use _jwtAuth_, you get the authentication as follows:
