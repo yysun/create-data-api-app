@@ -36,17 +36,22 @@ function parse(text) {
     return [params, queries];
   }
 
+  const ignoreChars = ['_', '.', '/', '-', '$'];
 
   const { models } = config;
   models.forEach(model => {
     const model_paths = [];
-    for (const objects of Object.values(model)) {
+    for (const [name, objects] of Object.entries(model)) {
+      if (ignoreChars.includes(name[0])) continue;
       // for all objects of model
       for (const obj of objects) {
         // each object has one key as object name and value as paths
-        let [obj_name, paths ] = Object.entries(obj)[0];
+        let [obj_name, paths] = Object.entries(obj)[0];
+        if (ignoreChars.includes(obj_name[0])) continue;
         let [type, name] = obj_name.split(' ');
+
         for (let [key, fields] of Object.entries(paths)) {
+          if (ignoreChars.includes(key[0])) continue;
           const authentication = key.includes('*');
           let [method, path] = key.replace(/\*/g, '').split(' ');
 

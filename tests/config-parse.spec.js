@@ -50,3 +50,46 @@ models:
   expect(path.queries[1].name).toBe('offset');
   expect(path.queries[2].name).toBe('sort');
 });
+
+
+test('should skip model', () => {
+  const config = `
+models:
+  - $users:
+    - table users:
+        get /users?limit=&offset=&sort=:
+          - int id
+          - varchar name
+          - varchar email
+`;
+  const result = parse(config);
+  expect(result.models[0].paths.length).toBe(0);
+});
+
+test('should skip object', () => {
+  const config = `
+models:
+  - users:
+    - $table users:
+        get /users?limit=&offset=&sort=:
+          - int id
+          - varchar name
+          - varchar email
+`;
+  const result = parse(config);
+  expect(result.models[0].paths.length).toBe(0);
+});
+
+test('should skip path', () => {
+  const config = `
+models:
+  - users:
+    - table users:
+        $get /users?limit=&offset=&sort=:
+          - int id
+          - varchar name
+          - varchar email
+`;
+  const result = parse(config);
+  expect(result.models[0].paths.length).toBe(0);
+});
