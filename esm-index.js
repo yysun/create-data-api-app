@@ -118,7 +118,7 @@ module.exports = {
 
   create_validation,
 
-  default: (cwd, config) => {
+  default: (cwd, config, no_npm_install) => {
 
     config.api_path = path.resolve(cwd, 'api');
     config.model_path = path.resolve(cwd, 'models');
@@ -134,26 +134,29 @@ module.exports = {
 
     fs.copyFileSync(`${__dirname}/esm-auth.js`, `${cwd}/auth.js`);
     fs.copyFileSync(`${__dirname}/esm-validate.js`, `${cwd}/validate.js`);
+    fs.copyFileSync(`${__dirname}/dockerfile`, `${cwd}/dockerfile`);
     fs.writeFileSync(`${cwd}/server.js`, createExpressServer(config));
     fs.writeFileSync(`${cwd}/test.http`, createTest(config));
     fs.writeFileSync(`${cwd}/README.md`, createReadme(config));
     fs.writeFileSync(`${cwd}/api-spec.yaml`, create_spec(config));
     const db = create_db(cwd, config) || '';
 
-    // if (!fs.existsSync(`${cwd}/package.json`)) {
-    //   execSync(`npm init -y`, { cwd });
-    //   const json = require(`${cwd}/package.json`);
-    //   json.type = 'module';
-    //   if (!json.scripts) json.scripts = {};
-    //   json.scripts.start = 'node server.js';
-    //   json.scripts["build:client"] = "apprun-site build";
-    //   json.scripts["build:server"] = "create-data-api-app";
-    //   json.scripts["build:zip"] = "zip -r archive.zip public/ api/ server.js package*.json";
-    //   fs.writeFileSync(`${cwd}/package.json`, JSON.stringify(json, null, 2));
-    // }
+    if (!fs.existsSync(`${cwd}/package.json`)) {
+      execSync(`npm init -y`, { cwd });
+      const json = require(`${cwd}/package.json`);
+      json.type = 'module';
+      if (!json.scripts) json.scripts = {};
+      json.scripts.start = 'node server.js';
+      json.scripts["build:client"] = "apprun-site build";
+      json.scripts["build:server"] = "create-data-api-app";
+      json.scripts["build:zip"] = "zip -r archive.zip public/ api/ server.js package*.json";
+      fs.writeFileSync(`${cwd}/package.json`, JSON.stringify(json, null, 2));
+    }
 
-    // execSync(`npm install apprun apprun-site dotenv jsonwebtoken zod`, { cwd });
-    // if (db === 'mssql') execSync(`npm install mssql`, { cwd });
-    // if (db === 'mysql' || db === 'mysql2') execSync(`npm install mysql2 sql-template-strings`, { cwd });
+    if (!no_npm_install) {
+      execSync(`npm install apprun apprun-site dotenv jsonwebtoken zod`, { cwd });
+      if (db === 'mssql') execSync(`npm install mssql`, { cwd });
+      if (db === 'mysql' || db === 'mysql2') execSync(`npm install mysql2 sql-template-strings`, { cwd });
+    }
   }
 }
