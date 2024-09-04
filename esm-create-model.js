@@ -137,7 +137,7 @@ module.exports = (model, config) => {
 
 
   const content = `//@ts-check
-import sql from '../db.js';
+import sql from './db.js';
 
 export default {
 ${services}

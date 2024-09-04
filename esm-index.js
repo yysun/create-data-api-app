@@ -6,12 +6,21 @@ const createReadme = require('./create-readme');
 const createTest = require('./create-http-test');
 const createExpressServer = require('./esm-create-server');
 const { create_spec, create_method_spec } = require('./esm-create-spec');
-const create_db = require('./esm-create-db');
 const create_model = require('./esm-create-model');
 
 const ensure = dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 };
+
+const writeFileIfNotExists = (file, content) => {
+  if (!fs.existsSync(file)) fs.writeFileSync(file, content);
+  else console.log(`File ${file} already exists, skipped`);
+}
+
+const copyFileSyncIfNotExists = (src, dest) => {
+  if (!fs.existsSync(dest)) fs.copyFileSync(src, dest);
+  else console.log(`File ${dest} already exists, skipped`);
+}
 
 const create_get_delete = (name, method, path, params, authentication, validation ) => {
   const inputs = params.map(p => p.name).join(', ');
@@ -100,8 +109,8 @@ const create_routes = (model, config) => {
   const content = `//@ts-check
 import express from 'express';
 import ${name} from '../models/${name}.js';
-import auth from '../auth.js';
-import validate from '../validate.js';
+import auth from '../middleware/auth.js';
+import validate from './validate.js';
 const app = express.Router();
 
 ${apis}
@@ -109,6 +118,28 @@ export default app;
 `;
   fs.writeFileSync(api_file, content);
 };
+
+
+const create_db = (cwd, config) => {
+  const { database } = config;
+  if (database === 'mysql2' || database === 'mysql') {
+    copyFileSyncIfNotExists(`${__dirname}/esm-db-mysql.js`, `${cwd}/models/db.js`);
+    writeFileIfNotExists(`${cwd}/.env`, `
+MYSQL_SERVER=localhost
+MYSQL_DATABASE=realworld
+MYSQL_USER=root
+MYSQL_PASSWORD=
+  `);
+  } else if (database === 'mssql') {
+    copyFileSyncIfNotExists(`${__dirname}/esm-db-mssql.js`, `${cwd}/models/db.js`);
+    writeFileIfNotExists(`${cwd}/.env`, `
+SQL_CONNECTION_STRING=Server=localhost;Database=mydb;Trusted_Connection=True;
+  `);
+  } else {
+    console.log(`Database ${database} not supported`);
+  }
+  return database;
+}
 
 module.exports = {
 
@@ -118,23 +149,25 @@ module.exports = {
 
     config.api_path = path.resolve(cwd, 'api');
     config.model_path = path.resolve(cwd, 'models');
+    config.middleware_path = path.resolve(cwd, 'middleware');
 
     ensure(cwd);
     ensure(config.api_path);
     ensure(config.model_path);
+    ensure(config.middleware_path);
 
     config.models.forEach(model => {
       create_routes(model, config);
       create_model(model, config);
     });
 
-    fs.copyFileSync(`${__dirname}/esm-auth.js`, `${cwd}/auth.js`);
-    fs.copyFileSync(`${__dirname}/esm-validate.js`, `${cwd}/validate.js`);
-    fs.copyFileSync(`${__dirname}/dockerfile`, `${cwd}/dockerfile`);
-    fs.writeFileSync(`${cwd}/server.js`, createExpressServer(config));
-    fs.writeFileSync(`${cwd}/test.http`, createTest(config));
-    fs.writeFileSync(`${cwd}/README.md`, createReadme(config));
+    copyFileSyncIfNotExists(`${__dirname}/esm-auth.js`, `${cwd}/middleware/auth.js`);
+    copyFileSyncIfNotExists(`${__dirname}/esm-validate.js`, `${cwd}/api/validate.js`);
     fs.writeFileSync(`${cwd}/api-spec.yaml`, create_spec(config));
+    fs.writeFileSync(`${cwd}/test.http`, createTest(config));
+    writeFileIfNotExists(`${cwd}/server.js`, createExpressServer(config));
+    writeFileIfNotExists(`${cwd}/README.md`, createReadme(config));
+    writeFileIfNotExists(`${__dirname}/dockerfile`, `${cwd}/dockerfile`);
     const db = create_db(cwd, config) || '';
 
     if (!fs.existsSync(`${cwd}/package.json`)) {
@@ -153,6 +186,8 @@ module.exports = {
       execSync(`npm install apprun apprun-site dotenv jsonwebtoken zod`, { cwd });
       if (db === 'mssql') execSync(`npm install mssql`, { cwd });
       if (db === 'mysql' || db === 'mysql2') execSync(`npm install mysql2 sql-template-strings`, { cwd });
+    } else {
+      console.log('Please run `npm install apprun apprun-site dotenv jsonwebtoken zod` to install the required packages');
     }
   }
 }

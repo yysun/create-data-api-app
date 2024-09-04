@@ -6,6 +6,8 @@ database: mysql
 models:
   - users:
     - table users:
+
+        get:
         # authentication
         post /users/login:
           - varchar username
