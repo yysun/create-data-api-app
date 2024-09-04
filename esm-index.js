@@ -12,14 +12,24 @@ const ensure = dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 };
 
+const relative = (file) => path.relative(process.cwd(), file);
+
+const writeFile = (file, content) => {
+  console.log(`Writing: ${relative(file)}`);
+  fs.writeFileSync(file, content);
+}
+
 const writeFileIfNotExists = (file, content) => {
-  if (!fs.existsSync(file)) fs.writeFileSync(file, content);
-  else console.log(`File ${file} already exists, skipped`);
+  if (!fs.existsSync(file)) writeFile(file, content);
+  else console.log(`Warning: ${relative(file)} already exists, skipped`);
 }
 
 const copyFileSyncIfNotExists = (src, dest) => {
-  if (!fs.existsSync(dest)) fs.copyFileSync(src, dest);
-  else console.log(`File ${dest} already exists, skipped`);
+  if (!fs.existsSync(dest)) {
+    console.log(`Copying: ${relative(src)} to ${relative(dest)}`);
+    fs.copyFileSync(src, dest);
+  }
+  else console.log(`Warning: ${relative(dest)} already exists, skipped`);
 }
 
 const create_get_delete = (name, method, path, params, authentication, validation ) => {
@@ -116,9 +126,8 @@ const app = express.Router();
 ${apis}
 export default app;
 `;
-  fs.writeFileSync(api_file, content);
+  writeFile(api_file, content);
 };
-
 
 const create_db = (cwd, config) => {
   const { database } = config;
@@ -163,11 +172,11 @@ module.exports = {
 
     copyFileSyncIfNotExists(`${__dirname}/esm-auth.js`, `${cwd}/middleware/auth.js`);
     copyFileSyncIfNotExists(`${__dirname}/esm-validate.js`, `${cwd}/api/validate.js`);
-    fs.writeFileSync(`${cwd}/api-spec.yaml`, create_spec(config));
-    fs.writeFileSync(`${cwd}/test.http`, createTest(config));
+    writeFile(`${cwd}/api-spec.yaml`, create_spec(config));
+    writeFile(`${cwd}/test.http`, createTest(config));
     writeFileIfNotExists(`${cwd}/server.js`, createExpressServer(config));
     writeFileIfNotExists(`${cwd}/README.md`, createReadme(config));
-    writeFileIfNotExists(`${__dirname}/dockerfile`, `${cwd}/dockerfile`);
+    copyFileSyncIfNotExists(`${__dirname}/dockerfile`, `${cwd}/dockerfile`);
     const db = create_db(cwd, config) || '';
 
     if (!fs.existsSync(`${cwd}/package.json`)) {
@@ -179,7 +188,7 @@ module.exports = {
       json.scripts["build:client"] = "apprun-site build";
       json.scripts["build:server"] = "create-data-api-app";
       json.scripts["build:zip"] = "zip -r archive.zip public/ api/ server.js package*.json";
-      fs.writeFileSync(`${cwd}/package.json`, JSON.stringify(json, null, 2));
+      writeFile(`${cwd}/package.json`, JSON.stringify(json, null, 2));
     }
 
     if (!no_npm_install) {
