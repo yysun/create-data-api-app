@@ -4,11 +4,9 @@ const yaml = require('js-yaml');
 
 module.exports = file => {
 
-  let config_exists = fs.existsSync(file);
-  if (!config_exists) {
-    console.log(`Config file not found: ${file}. \nCreating an example config.yaml`);
-    const example_file = path.join(__dirname, 'config.yaml');
-    fs.copyFileSync(example_file, file);
+  if (!fs.existsSync(file)) {
+    console.log(`Config file not found: ${file}.`);
+    throw new Error('Config file not found');
   }
   const config = fs.readFileSync(file, 'utf8');
   return parse(config);
