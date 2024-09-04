@@ -8,6 +8,8 @@ const createExpressServer = require('./esm-create-server');
 const { create_spec, create_method_spec } = require('./esm-create-spec');
 const create_model = require('./esm-create-model');
 
+const { green, gray } = require('./colors');
+
 const ensure = dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 };
@@ -15,21 +17,21 @@ const ensure = dir => {
 const relative = (file) => path.relative(process.cwd(), file);
 
 const writeFile = (file, content) => {
-  console.log(`Writing: ${relative(file)}`);
+  console.log(green`✔ ${relative(file)}`);
   fs.writeFileSync(file, content);
 }
 
 const writeFileIfNotExists = (file, content) => {
   if (!fs.existsSync(file)) writeFile(file, content);
-  else console.log(`Warning: ${relative(file)} already exists, skipped`);
+  else console.log(gray`✖ ${relative(file)} - exists, skipped`);
 }
 
 const copyFileSyncIfNotExists = (src, dest) => {
   if (!fs.existsSync(dest)) {
-    console.log(`Copying: ${relative(src)} to ${relative(dest)}`);
+    console.log(green`✔ ${relative(dest)}`);
     fs.copyFileSync(src, dest);
   }
-  else console.log(`Warning: ${relative(dest)} already exists, skipped`);
+  else console.log(gray`✖ ${relative(dest)} - exists, skipped`);
 }
 
 const create_get_delete = (name, method, path, params, authentication, validation ) => {
@@ -170,10 +172,10 @@ module.exports = {
       create_model(model, config);
     });
 
-    copyFileSyncIfNotExists(`${__dirname}/esm-auth.js`, `${cwd}/middleware/auth.js`);
-    copyFileSyncIfNotExists(`${__dirname}/esm-validate.js`, `${cwd}/api/validate.js`);
     writeFile(`${cwd}/api-spec.yaml`, create_spec(config));
     writeFile(`${cwd}/test.http`, createTest(config));
+    copyFileSyncIfNotExists(`${__dirname}/esm-auth.js`, `${cwd}/middleware/auth.js`);
+    copyFileSyncIfNotExists(`${__dirname}/esm-validate.js`, `${cwd}/api/validate.js`);
     writeFileIfNotExists(`${cwd}/server.js`, createExpressServer(config));
     writeFileIfNotExists(`${cwd}/README.md`, createReadme(config));
     copyFileSyncIfNotExists(`${__dirname}/dockerfile`, `${cwd}/dockerfile`);
