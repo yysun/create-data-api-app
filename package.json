@@ -9,7 +9,7 @@
   "scripts": {
     "test": "jest",
     "start": "cd demo && nodemon server",
-    "dev": "nodemon --ignore demo/ cli.js -- demo"
+    "dev": "nodemon --ignore test/ cli.js -- test"
   },
   "keywords": [],
   "author": "Yiyi Sun <yiyisun@gmail.com>",

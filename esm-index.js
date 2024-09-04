@@ -72,10 +72,10 @@ const create_post_put = (name, method, path, fields, authentication, validation)
 const create_api = (name, paths) => paths.map((pathDef) => {
   let { method, path, fields, authentication, params, queries } = pathDef;
   authentication = authentication ? 'auth, ' : '';
-  let method_spec = create_method_spec(pathDef);
-  method_spec = method_spec.split('\n')
-    .filter(l => l.trim().length)
-    .map(line => `*${line.substring(2)}`).join('\n');
+  // let method_spec = create_method_spec(pathDef);
+  // method_spec = method_spec.split('\n')
+  //   .filter(l => l.trim().length)
+  //   .map(line => `*${line.substring(2)}`).join('\n');
 
   let validation = '';
   if (params.length) validation += create_validation('params', params);
@@ -84,11 +84,7 @@ const create_api = (name, paths) => paths.map((pathDef) => {
   const method_func = (method === 'get' || method === 'delete') ?
     create_get_delete(name, method, path, params, authentication, validation) :
     create_post_put(name, method, path, fields, authentication, validation);
-  return `/**
-* @swagger
-* ${path}
-${method_spec}
-*/
+  return `
 ${method_func}
 `
 });
