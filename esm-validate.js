@@ -1,17 +1,17 @@
 import { z } from 'zod';
 
 const typeMapping = {
-  int: z.number().int(),
-  number: z.number(),
-  Boolean: z.boolean(),
+  int: z.coerce.number().int(),  // Coerce string to int
+  number: z.coerce.number(),     // Coerce string to number
+  Boolean: z.coerce.boolean(),   // Coerce string to boolean
   string: z.string(),
-  email: z.string(),
+  email: z.string().email(),
   password: z.string(),
   varchar: z.string(),
-  date: z.date(),
-  datetime: z.date(),
+  date: z.coerce.date(),         // Coerce string to date
+  datetime: z.coerce.date(),     // Coerce string to date
   time: z.string(),
-  timestamp: z.date(),
+  timestamp: z.coerce.date(),    // Coerce string to date
   array: z.array(),
   json: z.record(z.any()),
 };
@@ -45,6 +45,7 @@ const zodMethods = [
   'catch',     // For setting a fallback value in case of validation failure
   'superRefine'// For adding advanced custom validation with context
 ];
+
 export function toZod(jsonSchema) {
   const zodSchema = {};
   for (const [key, rules] of Object.entries(jsonSchema)) {
@@ -53,10 +54,12 @@ export function toZod(jsonSchema) {
     if (!zodType) {
       throw new Error(`Unsupported type: ${rules.type}`);
     }
+    
     if ((!rules.hasOwnProperty('optional') || rules.optional === false) &&
       (type === 'string' || type === 'varchar')) {
       zodType = zodType.min(1, { message });
     }
+
     for (const [propKey, propValue] of Object.entries(rules)) {
       if (propKey === 'type' || propKey === 'message') continue;
       if (zodMethods.includes(propKey)) {
@@ -77,4 +80,4 @@ export default (target, schema) => (req, res, next) => {
   }
   req[target] = parsed.data;
   next();
-}
+};

@@ -1,4 +1,5 @@
-const toZod = require( '../validate.js');
+// had trouble to test esm module, so use the copy of commonjs version
+const toZod = require('../validate.js');
 
 test('should convert to zod', () => {
   const jsonSchema = {
@@ -99,11 +100,22 @@ test('should allow optional - false', () => {
   const zobj = toZod(jsonSchema);
   const data = {
     id: 123,
-    name: "user",
     // email: "user-example.com",
   };
 
   const result = zobj.safeParse(data);
   expect(result.success).toBe(false);
   // expect(result.error.errors[0].message).toBe('wrong email');
+});
+
+test('should allow use corece', () => {
+  const jsonSchema = {
+    id: { type: 'int' },
+  };
+  const zobj = toZod(jsonSchema);
+  const data = {
+    id: "123",
+  };
+  const result = zobj.safeParse(data);
+  expect(result.success).toBe(true);
 });
