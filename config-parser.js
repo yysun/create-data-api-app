@@ -56,6 +56,7 @@ function parse(text) {
           fields = fields ? fields.map(field => parse_field(field)) :[];
           path = path || `/${name}`;
           method = method.toLowerCase();
+          const func = method + path.replace(/\//g, '_').replace(':', '_by_');
           path = `${config.path}${path}`;
           let [params, queries] = parse_url(path);
           params = params.map(p => fields.find(f => f.name === p) || { name: p, type: 'string' });
@@ -66,6 +67,7 @@ function parse(text) {
             type,
             path,
             method,
+            func,
             params,
             queries,
             fields,

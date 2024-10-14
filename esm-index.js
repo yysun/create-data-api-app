@@ -34,7 +34,7 @@ const copyFileSyncIfNotExists = (src, dest) => {
   else console.log(gray`✖ ${relative(dest)} - exists, skipped`);
 }
 
-const create_get_delete = (name, method, path, params, authentication, validation ) => {
+const create_get_delete = (name, method, path, params, authentication, validation, func) => {
   const inputs = params.map(p => p.name).join(', ');
   const setCache = method === 'get' ? '    //res.setHeader("Cache-Control", "public, max-age=86400");' : '';
   if (validation) validation = '\n' + validation + '\n';
@@ -42,8 +42,8 @@ const create_get_delete = (name, method, path, params, authentication, validatio
   async (req, res, next) => {
     try {
 ${inputs.length ? `    const {${inputs}} = req.params;
-    const result = await ${name}['${method} ${path}'](${inputs});` : `
-    const result = await ${name}['${method} ${path}']();`}
+    const result = await ${name}.${func}(${inputs});` : `
+    const result = await ${name}.${func}();`}
 ${setCache}
     res.json(result);
     } catch (e) {
@@ -59,7 +59,7 @@ const create_validation = (type, fields) => {
   const create_field_validation = (field) => {
     let { name, type, validation } = field;
     let json = validation ? JSON.parse(validation) : {};
-    if(type === 'varchar') type = 'string';
+    if (type === 'varchar') type = 'string';
     json = { type, ...json };
     return `    "${name}": ${JSON.stringify(json)}`;
   }
@@ -69,7 +69,8 @@ ${fields.map(f => create_field_validation(f)).join(',\n')}
   }),`;
 };
 
-const create_post_put = (name, method, path, fields, authentication, validation) => {
+const create_post_put = (name, method, path, fields, authentication, validation, func) => {
+
   const inputs = fields.map(f => f.name).join(', ');
   if (fields.length) validation += create_validation('body', fields);
   return `app.${method}('${path}', ${authentication}
@@ -78,7 +79,7 @@ const create_post_put = (name, method, path, fields, authentication, validation)
   async (req, res, next) => {
     const {${inputs}} = req.body;
     try {
-      const result = await ${name}['${method} ${path}'](${inputs});
+      const result = await ${name}.${func}(${inputs});
       res.json(result);
     } catch (e) {
       next(e);
@@ -91,7 +92,7 @@ const create_post_put = (name, method, path, fields, authentication, validation)
 
 
 const create_api = (name, paths) => paths.map((pathDef) => {
-  let { method, path, fields, authentication, params, queries } = pathDef;
+  let { method, path, fields, authentication, params, queries, func } = pathDef;
   authentication = authentication ? 'auth, ' : '';
   // let method_spec = create_method_spec(pathDef);
   // method_spec = method_spec.split('\n')
@@ -103,8 +104,8 @@ const create_api = (name, paths) => paths.map((pathDef) => {
   if (queries.length) validation += create_validation('query', queries);
 
   const method_func = (method === 'get' || method === 'delete') ?
-    create_get_delete(name, method, path, params, authentication, validation) :
-    create_post_put(name, method, path, fields, authentication, validation);
+    create_get_delete(name, method, path, params, authentication, validation, func) :
+    create_post_put(name, method, path, fields, authentication, validation, func);
   return `
 ${method_func}
 `

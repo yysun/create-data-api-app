@@ -75,7 +75,7 @@ ${key_names.map(f => `      ${f} = \${${f}}`).join(' AND\n')}\`;
 function createStoredProcedure({ name, fields }) {
   return `
   // procedure: ${name}
-  "${name}": async (${fields.map(f => `${f.name}`).join(', ')}) => {
+  ${name}: async (${fields.map(f => `${f.name}`).join(', ')}) =>{
     ${fields.length === 0 ? `
     const result = await sql.query\`${name}\`` : `
     const result = await sql.query\`${name}
@@ -102,14 +102,14 @@ const create_sql = (path) => {
 
 
 const create_method = pathDef => {
-  const { type, name, path, method } = pathDef;
+  const { type, name, func, method } = pathDef;
   let inputs = pathDef.fields.map(f => f.name).join(', ');
   if (method === 'get' || method === 'delete') {
     inputs = pathDef.params.map(p => p.name).join(', ');
   }
-  const key = `${method} ${path}`;
+
   return `  // ${type}: ${name}
-  "${key}": async (${inputs}) => {
+  ${func} : async (${inputs}) =>{
     ${create_sql(pathDef)}
   },
   `
@@ -138,9 +138,8 @@ module.exports = (model, config) => {
 
   const content = `//@ts-check
 import sql from './db.js';
-
 export default {
-${services}
+  ${services}
 }
 `;
   fs.writeFileSync(model_file, content);
